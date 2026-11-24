@@ -1,0 +1,10 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# pnpm 12 blocks postinstall scripts by default. These are the only packages
+# permitted to run them: esbuild fetches its native binary, puppeteer downloads
+# Chromium for the UI verification script.
+allowBuilds:
+  esbuild: true
+  puppeteer: true
