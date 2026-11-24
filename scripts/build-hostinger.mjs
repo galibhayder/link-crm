@@ -15,8 +15,8 @@
  * `@crm/shared` is compiled into `dist/` rather than left as a workspace link,
  * because the host cannot resolve `workspace:*`.
  */
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execSync } from "node:child_process";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 
 const OUT = "dist-hostinger";
 const log = (m) => console.log(`[hostinger] ${m}`);
@@ -33,10 +33,78 @@ rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
 // ---------------------------------------------------------------------------
-// 1. Build the monorepo
+// 1. Verify the FRONTEND build-time config before building anything.
+//
+// Vite INLINES VITE_* at build time. Building from a developer checkout uses
+// apps/web/.env, which points at the local Docker stack — so the shipped bundle
+// would carry `http://127.0.0.1:54321` and render a login form that can only ever
+// reach the developer's laptop. It compiles, it boots, and it is useless.
+//
+// So the values must be supplied HERE, in the environment, and they are baked in
+// for real. Read from .env if present (a release build), otherwise demanded from
+// the environment (CI).
+// ---------------------------------------------------------------------------
+log("resolving frontend build-time configuration");
+
+function readDotEnv(path) {
+  if (!existsSync(path)) return {};
+  return Object.fromEntries(
+    readFileSync(path, "utf8")
+      .split("\n")
+      .map((line) => line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/))
+      .filter(Boolean)
+      .map((m) => [m[1], m[2].replace(/^["']|["']$/g, "").trim()]),
+  );
+}
+
+const webEnv = readDotEnv("apps/web/.env");
+
+const webUrl = process.env.VITE_SUPABASE_URL || webEnv.VITE_SUPABASE_URL || "";
+const webAnon = process.env.VITE_SUPABASE_ANON_KEY || webEnv.VITE_SUPABASE_ANON_KEY || "";
+
+if (!webUrl || !webAnon) {
+  console.error(
+    "[hostinger] FAILED: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required.\n" +
+      "  They are inlined into the bundle at build time; without them the app builds\n" +
+      "  and serves, but sign-in can never work.\n" +
+      "  Provide them in the environment (or apps/web/.env) before building.",
+  );
+  process.exit(1);
+}
+
+// A localhost origin is the exact failure this check exists to prevent, and it is
+// silent otherwise: the artifact boots, /health/ready says reachable, and only
+// login is broken.
+if (/127\.0\.0\.1|localhost/.test(webUrl)) {
+  console.error(
+    `[hostinger] FAILED: VITE_SUPABASE_URL is ${webUrl}\n` +
+      "  That is the local Docker stack. The bundle would ship pointing at a laptop.\n" +
+      "  Set VITE_SUPABASE_URL to the hosted project URL for the deploy build.",
+  );
+  process.exit(1);
+}
+
+// VITE_API_URL must be EMPTY in a single-origin deployment: Express serves the
+// SPA and the API on one host, so any absolute value makes the browser bypass it.
+if (process.env.VITE_API_URL || webEnv.VITE_API_URL) {
+  console.warn("[hostinger] WARNING: VITE_API_URL is set. In a single-origin deploy it must be empty.");
+}
+
+log(`frontend will target ${webUrl}`);
+
+// ---------------------------------------------------------------------------
+// 2. Build the monorepo
 // ---------------------------------------------------------------------------
 log("building workspaces (shared -> api -> web)");
-execSync("pnpm build", { stdio: "inherit" });
+execSync("pnpm build", {
+  stdio: "inherit",
+  env: {
+    ...process.env,
+    VITE_SUPABASE_URL: webUrl,
+    VITE_SUPABASE_ANON_KEY: webAnon,
+    VITE_API_URL: "",
+  },
+});
 
 must(existsSync("apps/api/dist/server.js"), "apps/api/dist/server.js was not produced");
 must(existsSync("apps/web/dist/index.html"), "apps/web/dist/index.html was not produced");
