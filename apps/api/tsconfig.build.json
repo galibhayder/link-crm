@@ -1,4 +1,22 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // `@crm/shared` must reach node_modules in the compiled output.
+    //
+    // The bare specifier is RETAINED deliberately. `tsc --paths` would rewrite it
+    // to a relative import, but that requires widening rootDir, which makes tsc
+    // mirror the whole path into dist/apps/api/src/ and breaks the entry point.
+    //
+    // Instead the deployment installs the package where Node can find it:
+    // `scripts/build-hostinger.mjs` vendors `@crm/shared` into node_modules, and
+    // the README's host steps do `pnpm install` from the monorepo root, which
+    // creates the same link. Either way `import "@crm/shared"` resolves.
+    //
+    // Proven by `scripts/verify-hostinger-artifact.mjs`, which BOOTS the artifact:
+    // the failure it guards against is
+    //   Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@crm/shared'
+    // which passes typecheck and every unit test because neither executes the
+    // emitted JavaScript.
+  },
   "exclude": ["src/**/*.test.ts"]
 }

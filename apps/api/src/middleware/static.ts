@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Request, RequestHandler, Response } from "express";
 import { isProd } from "../config/env.js";
 
@@ -147,6 +148,9 @@ export function createStaticMiddleware(webDistPath: string): RequestHandler {
 
 /** Where the built SPA is expected, relative to the API's own dist directory. */
 export function defaultWebDistPath(): string {
-  // apps/api/dist -> apps/web/dist
-  return resolve(import.meta.dirname, "../../../web/dist");
+  // `import.meta.dirname` is Node >= 20.11 only. package.json says `>=20`, so a
+  // host on 20.0-20.10 would boot fine and then throw on EVERY page load, long
+  // after /health/live reported healthy. resolve() on the same expression works on
+  // every version the engine allows.
+  return resolve(fileURLToPath(import.meta.url), "../../../web/dist");
 }

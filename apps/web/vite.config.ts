@@ -3,13 +3,41 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { fileURLToPath, URL } from "node:url";
 
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  resolve: {
-    alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
+/**
+ * VITE_* variables are INLINED AT BUILD TIME, not read at runtime.
+ *
+ * `lib/supabase.ts` returns null when either is missing, so a build without them
+ * produces a bundle that renders a login form which can never authenticate. The
+ * symptom is a permanent "Signing in…" and nothing in the server log, because the
+ * browser never sends a request.
+ *
+ * A deployment panel sets variables for the RUNNING process, which is too late:
+ * the value was already baked into the JavaScript. The build is therefore the only
+ * place this can be caught, and it must be caught loudly.
+ */
+export default defineConfig(({ command }) => {
+  if (command === "build") {
+    const missing = ["VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"].filter(
+      (k) => !process.env[k] || process.env[k]?.trim() === "",
+    );
+
+    if (missing.length > 0) {
+      console.warn(
+        `\n[vite] WARNING: ${missing.join(", ")} not set at BUILD time.\n` +
+          "        The bundle builds, but the Supabase client returns null, so\n" +
+          "        sign-in can never succeed. Set them as build-time variables and\n" +
+          "        rebuild — setting them only at runtime has no effect.\n",
+      );
+    }
+  }
+
+  return {
+    plugins: [react(), tailwindcss()],
+    resolve: {
+      alias: {
+        "@": fileURLToPath(new URL("./src", import.meta.url)),
+      },
     },
-  },
   server: {
     port: 5173,
     // Proxying keeps the browser on one origin in development, so there is no
@@ -47,6 +75,7 @@ export default defineConfig({
         },
       },
     },
-    chunkSizeWarningLimit: 600,
-  },
+      chunkSizeWarningLimit: 600,
+    },
+  };
 });

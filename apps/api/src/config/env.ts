@@ -14,7 +14,14 @@ try {
  * crash the process immediately rather than produce `undefined` at 3am.
  */
 const envSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  // REQUIRED in production, not defaulted to "development".
+  //
+  // Every production guard in this file — and the strict CSP in app.ts — is keyed
+  // off `isProd`. Defaulting to development means a host whose deployment panel
+  // does not set NODE_ENV silently runs with all guards disabled AND a weaker
+  // Content-Security-Policy, while /health/live reports healthy. A missing value
+  // must fail at boot instead of quietly downgrading security.
+  NODE_ENV: z.enum(["development", "test", "production"]).optional(),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
 
   // Public — safe in the browser bundle, used for auth and Storage uploads.
@@ -45,7 +52,7 @@ const envSchema = z.object({
   WEB_DIST_PATH: z.string().default(""),
 });
 
-export type Env = z.infer<typeof envSchema>;
+export type Env = z.infer<typeof envSchema> & { NODE_ENV: "development" | "test" | "production" };
 
 /**
  * Reports an invalid configuration and stops.
@@ -84,13 +91,32 @@ function loadEnv(): Env {
   const config = parsed.data;
 
   /**
+   * NODE_ENV is optional in the schema but NOT optional at runtime.
+   *
+   * Without it there is no way to know whether to apply the production guards, and
+   * guessing "development" would silently disable them. The only safe assumption
+   * for an unset value is that this is NOT a real production deployment — but that
+   * assumption must be loud, so the operator learns it from a boot warning rather
+   * than from a security review six months later.
+   */
+  if (!config.NODE_ENV) {
+    console.warn(
+      "[env] NODE_ENV is not set. Treating this as development: the production " +
+        "guards and the strict Content-Security-Policy are NOT active. " +
+        "Set NODE_ENV=production in the deployment environment.",
+    );
+  }
+
+  const nodeEnv = config.NODE_ENV ?? "development";
+
+  /**
    * Production-only checks.
    *
    * Each of these has a default that is correct for development and silently wrong
    * in production, which is the worst combination: the server boots happily and the
    * damage only appears later. They are rejected at startup instead.
    */
-  if (config.NODE_ENV === "production") {
+  if (nodeEnv === "production") {
     const problems: string[] = [];
 
     if (config.CORS_ORIGINS.every((o) => o.includes("localhost") || o.includes("127.0.0.1"))) {
@@ -112,7 +138,7 @@ function loadEnv(): Env {
     }
   }
 
-  return config;
+  return { ...config, NODE_ENV: nodeEnv };
 }
 
 export const env = loadEnv();
