@@ -1,0 +1,183 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# One run per branch. Pushing twice in a row cancels the superseded run rather
+# than paying for both.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # =========================================================================
+  # STATIC — no database required.
+  #
+  # Split from the integration job on purpose: this half finishes in a couple of
+  # minutes and catches the overwhelming majority of mistakes, so a broken import
+  # or a type error reports immediately rather than after Supabase boots.
+  # =========================================================================
+  static:
+    name: Typecheck, build, unit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # --frozen-lockfile: fail if package.json and the lockfile disagree. Quietly
+      # resolving a different tree than the developer tested is how "works on my
+      # machine" gets deployed.
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # Unit tests ONLY for the two packages that have none of the DB dependency.
+      # `pnpm test` at the root also runs @crm/db, whose RLS suite needs a live
+      # Postgres and fails with "Hook timed out" here. That suite gets the
+      # integration job below.
+      - name: Unit tests
+        run: pnpm --filter @crm/shared --filter @crm/api test
+
+      - name: Build
+        run: pnpm build
+
+      # A service-role key in the browser bundle is a full database compromise,
+      # so this is a hard gate rather than a warning. Requires the build output.
+      - name: No server secrets in the browser bundle
+        run: pnpm verify:secrets
+
+      # Scans the CONTENT of every tracked file, not just file names: a real key
+      # pasted into a test or a doc is just as leaked as one in .env. Also runs its
+      # own self-test first, so a rule change cannot silently blind the scanner.
+      - name: No credentials in committed files
+        run: |
+          pnpm test:secret-scanner
+          pnpm verify:commits
+
+      # Assembles the Hostinger upload bundle, then BOOTS it and asserts it serves
+      # the SPA and answers the API. Two real deployment failures (workspace
+      # resolution, an ESM font import) passed typecheck and every unit test and
+      # only appeared when the built artifact was executed.
+      - name: Deployment artifact boots
+        run: pnpm build:hostinger
+
+  # =========================================================================
+  # INTEGRATION — real Postgres, real RLS, real API.
+  #
+  # Everything here needs a database, which is why it is a separate job with its
+  # own Supabase instance. Same commands a developer runs locally.
+  # =========================================================================
+  integration:
+    name: Database and API integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Start Supabase
+        run: supabase start
+
+      # Applies all migrations then seed.sql, and fails on any migration error.
+      # Migrations are ordered and some deliberately fix earlier ones, so this also
+      # asserts that a clean install produces a correct schema.
+      - name: Apply migrations and seed
+        run: supabase db reset
+
+      - name: Build
+        run: pnpm build
+
+      # The API validates its environment at boot and refuses to start in
+      # production with development defaults, so NODE_ENV stays development here.
+      - name: Start API
+        run: |
+          pnpm --filter @crm/api start &
+          npx --yes wait-on http://127.0.0.1:3000/health/ready --timeout 120000
+
+      # /health/ready, not /health/live: the former executes a query and fails if
+      # the database is unreachable, while /live returns 200 regardless.
+      - name: Verify database connectivity
+        run: |
+          curl -fsS http://127.0.0.1:3000/health/ready | tee /dev/stderr | grep -q '"database":"reachable"'
+
+      - name: RLS suite
+        run: pnpm --filter @crm/db test
+
+      # The security audits run before the feature suites: if authorization is
+      # broken, a green CRUD test is not reassuring.
+      - name: Security audits
+        run: pnpm audit:production
+
+      - name: Feature suites
+        run: |
+          node scripts/test-authorization.mjs
+          node scripts/test-phase5-1-verification.mjs
+          node scripts/test-phase5-1-jobs.mjs
+          node scripts/test-phase6-sharing.mjs
+          node scripts/test-phase6-financials.mjs
+          node scripts/test-phase6-exports.mjs
+
+      - name: Upload API logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-logs
+          path: |
+            *.log
+            apps/api/*.log
+          retention-days: 3
+          if-no-files-found: ignore
+
+  # =========================================================================
+  # A single required check for branch protection.
+  #
+  # Branch protection can only require individual job names, so renaming a job
+  # silently stops protecting main. Requiring this one name instead means the
+  # job list can change without weakening the gate.
+  # =========================================================================
+  ci:
+    name: CI
+    if: always()
+    needs: [static, integration]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail unless every job succeeded
+        run: |
+          echo "static:      ${{ needs.static.result }}"
+          echo "integration: ${{ needs.integration.result }}"
+          if [ "${{ needs.static.result }}" != "success" ] || [ "${{ needs.integration.result }}" != "success" ]; then
+            echo "One or more jobs did not succeed."
+            exit 1
+          fi
