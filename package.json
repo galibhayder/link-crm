@@ -74,6 +74,7 @@
     "test:secret-scanner": "node scripts/test-secret-scanner.mjs",
     "build:hostinger": "node scripts/build-hostinger.mjs",
     "db:bundle": "node scripts/bundle-migrations.mjs && node scripts/verify-migration-bundle.mjs",
+    "db:test-bootstrap": "node scripts/test-bootstrap-sequence.mjs",
     "docs:api": "node scripts/generate-api-docs.mjs",
     "audit:rls": "node scripts/audit-production-rls.mjs",
     "audit:production-roles": "node scripts/audit-production-roles.mjs",
