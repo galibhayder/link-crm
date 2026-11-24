@@ -47,6 +47,29 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
+/**
+ * Reports an invalid configuration and stops.
+ *
+ * `process.exit` is correct at boot and WRONG when this module is imported by a
+ * test: it kills the runner instead of failing one test, so the report says
+ * "process.exit unexpectedly called" rather than naming the problem. Throwing
+ * gives a normal stack trace; the entry point catches it and exits.
+ */
+function fatal(message: string): never {
+  console.error(message);
+  if (isRunningTests()) throw new Error(message);
+
+  process.exit(1);
+}
+
+function isRunningTests(): boolean {
+  return (
+    process.env.NODE_ENV === "test" ||
+    process.env.VITEST === "true" ||
+    typeof (globalThis as { __vitest_worker__?: unknown }).__vitest_worker__ !== "undefined"
+  );
+}
+
 function loadEnv(): Env {
   const parsed = envSchema.safeParse(process.env);
 
@@ -55,8 +78,7 @@ function loadEnv(): Env {
       .map((i) => `  ${i.path.join(".") || "(root)"}: ${i.message}`)
       .join("\n");
     // Fail loudly and immediately. A half-configured server is worse than none.
-    console.error(`Invalid environment configuration:\n${issues}`);
-    process.exit(1);
+    fatal(`Invalid environment configuration:\n${issues}`);
   }
 
   const config = parsed.data;
@@ -69,25 +91,24 @@ function loadEnv(): Env {
    * damage only appears later. They are rejected at startup instead.
    */
   if (config.NODE_ENV === "production") {
-    const fatal: string[] = [];
+    const problems: string[] = [];
 
     if (config.CORS_ORIGINS.every((o) => o.includes("localhost") || o.includes("127.0.0.1"))) {
-      fatal.push(
+      problems.push(
         "CORS_ORIGINS still points at localhost. Set it to the real origin, e.g. https://crm.triveromarketing.com",
       );
     }
     if (!config.JOB_HMAC_SECRET) {
       // Without it every scheduled job is unreachable, so link verification and
       // overdue reminders stop silently rather than erroring.
-      fatal.push("JOB_HMAC_SECRET is required in production (scheduled jobs cannot run without it)");
+      problems.push("JOB_HMAC_SECRET is required in production (scheduled jobs cannot run without it)");
     }
     if (config.SUPABASE_URL.includes("127.0.0.1") || config.SUPABASE_URL.includes("localhost")) {
-      fatal.push("SUPABASE_URL points at localhost. Set it to the hosted project URL.");
+      problems.push("SUPABASE_URL points at localhost. Set it to the hosted project URL.");
     }
 
-    if (fatal.length > 0) {
-      console.error(`Refusing to start in production:\n${fatal.map((f) => `  - ${f}`).join("\n")}`);
-      process.exit(1);
+    if (problems.length > 0) {
+      fatal(`Refusing to start in production:\n${problems.map((p) => `  - ${p}`).join("\n")}`);
     }
   }
 

@@ -1,4 +1,15 @@
-﻿
+﻿node.exe : Warning: --local isn't needed (local is the default) and will be removed in v4
+At C:\Users\Galib\AppData\Local\hermes\node\pnpm.ps1:16 char:5
++     & "$basedir/node$exe"  "$basedir/node_modules/corepack/dist/pnpm. ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Warning: --loca...e removed in v4:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Target: local stack (127.0.0.1:54322)
+Connecting to 127.0.0.1 54322
+Generated TypeScript is unformatted. Format it with:
+  npx oxfmt <generated-file.ts>
+
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
@@ -75,6 +86,70 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"anchor_alerts": {
+                  Row: {
+                    "anchor_category": string,"campaign_id": string | null,"client_id": string | null,"created_at": string,"created_by": string | null,"enabled": boolean,"id": string,"max_share": number,"min_links": number,"min_share": number | null,"organization_id": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "anchor_category": string,"campaign_id"?: string | null,"client_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"enabled"?: boolean,"id"?: string,"max_share": number,"min_links"?: number,"min_share"?: number | null,"organization_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "anchor_category"?: string,"campaign_id"?: string | null,"client_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"enabled"?: boolean,"id"?: string,"max_share"?: number,"min_links"?: number,"min_share"?: number | null,"organization_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "anchor_alerts_campaign_id_fkey"
+      columns: ["campaign_id"]
+isOneToOne: false
+      referencedRelation: "campaigns"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anchor_alerts_campaign_id_fkey"
+      columns: ["campaign_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_progress"
+      referencedColumns: ["campaign_id"]
+    },{
+      foreignKeyName: "anchor_alerts_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anchor_alerts_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
+    },{
+      foreignKeyName: "anchor_alerts_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anchor_alerts_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"app_settings": {
+                  Row: {
+                    "description": string | null,"key": string,"updated_at": string,"value": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "description"?: string | null,"key": string,"updated_at"?: string,"value": string
+                  }
+                  Update: {
+                    "description"?: string | null,"key"?: string,"updated_at"?: string,"value"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"attachments": {
                   Row: {
                     "campaign_id": string | null,"client_id": string | null,"created_at": string,"entity_id": string,"entity_type": string,"file_name": string,"id": string,"mime": string,"organization_id": string,"size_bytes": number,"storage_path": string,"uploaded_by": string | null
@@ -105,6 +180,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "attachments_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
     },{
       foreignKeyName: "attachments_organization_id_fkey"
       columns: ["organization_id"]
@@ -157,6 +238,62 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"campaign_expenses": {
+                  Row: {
+                    "amount": number,"campaign_id": string,"category": string,"created_at": string,"created_by": string | null,"currency": string,"description": string,"id": string,"incurred_on": string,"notes": string | null,"organization_id": string,"placement_id": string | null,"updated_at": string,"vendor": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount": number,"campaign_id": string,"category"?: string,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"description": string,"id"?: string,"incurred_on"?: string,"notes"?: string | null,"organization_id": string,"placement_id"?: string | null,"updated_at"?: string,"vendor"?: string | null
+                  }
+                  Update: {
+                    "amount"?: number,"campaign_id"?: string,"category"?: string,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"description"?: string,"id"?: string,"incurred_on"?: string,"notes"?: string | null,"organization_id"?: string,"placement_id"?: string | null,"updated_at"?: string,"vendor"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "campaign_expenses_campaign_id_fkey"
+      columns: ["campaign_id"]
+isOneToOne: false
+      referencedRelation: "campaigns"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "campaign_expenses_campaign_id_fkey"
+      columns: ["campaign_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_progress"
+      referencedColumns: ["campaign_id"]
+    },{
+      foreignKeyName: "campaign_expenses_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "campaign_expenses_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "campaign_expenses_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "placements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "campaign_expenses_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "v_placement_margin"
+      referencedColumns: ["placement_id"]
+    },{
+      foreignKeyName: "campaign_expenses_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "v_portal_placements"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"campaign_monthly_targets": {
                   Row: {
                     "campaign_id": string,"created_at": string,"id": string,"organization_id": string,"period_month": string,"target_cost": number | null,"target_links": number,"updated_at": string
@@ -191,14 +328,14 @@ isOneToOne: false
                   ]
                 },"campaigns": {
                   Row: {
-                    "anchor_mix": NonNullable<Json>,"client_id": string,"created_at": string,"deleted_at": string | null,"end_date": string | null,"id": string,"monthly_link_target": number,"name": string,"organization_id": string,"service_type": string,"start_date": string | null,"status": string,"target_dr_min": number | null,"target_traffic_min": number | null,"updated_at": string
+                    "anchor_mix": NonNullable<Json>,"client_id": string,"created_at": string,"deleted_at": string | null,"end_date": string | null,"id": string,"monthly_link_target": number,"name": string,"notes": string | null,"organization_id": string,"service_type": string,"start_date": string | null,"status": string,"target_dr_min": number | null,"target_traffic_min": number | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "anchor_mix"?: NonNullable<Json>,"client_id": string,"created_at"?: string,"deleted_at"?: string | null,"end_date"?: string | null,"id"?: string,"monthly_link_target"?: number,"name": string,"organization_id": string,"service_type"?: string,"start_date"?: string | null,"status"?: string,"target_dr_min"?: number | null,"target_traffic_min"?: number | null,"updated_at"?: string
+                    "anchor_mix"?: NonNullable<Json>,"client_id": string,"created_at"?: string,"deleted_at"?: string | null,"end_date"?: string | null,"id"?: string,"monthly_link_target"?: number,"name": string,"notes"?: string | null,"organization_id": string,"service_type"?: string,"start_date"?: string | null,"status"?: string,"target_dr_min"?: number | null,"target_traffic_min"?: number | null,"updated_at"?: string
                   }
                   Update: {
-                    "anchor_mix"?: NonNullable<Json>,"client_id"?: string,"created_at"?: string,"deleted_at"?: string | null,"end_date"?: string | null,"id"?: string,"monthly_link_target"?: number,"name"?: string,"organization_id"?: string,"service_type"?: string,"start_date"?: string | null,"status"?: string,"target_dr_min"?: number | null,"target_traffic_min"?: number | null,"updated_at"?: string
+                    "anchor_mix"?: NonNullable<Json>,"client_id"?: string,"created_at"?: string,"deleted_at"?: string | null,"end_date"?: string | null,"id"?: string,"monthly_link_target"?: number,"name"?: string,"notes"?: string | null,"organization_id"?: string,"service_type"?: string,"start_date"?: string | null,"status"?: string,"target_dr_min"?: number | null,"target_traffic_min"?: number | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -207,6 +344,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "campaigns_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
     },{
       foreignKeyName: "campaigns_organization_id_fkey"
       columns: ["organization_id"]
@@ -234,6 +377,12 @@ isOneToOne: true
       referencedRelation: "clients"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "client_billing_profiles_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: true
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
+    },{
       foreignKeyName: "client_billing_profiles_organization_id_fkey"
       columns: ["organization_id"]
 isOneToOne: false
@@ -260,6 +409,12 @@ isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "client_contacts_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
+    },{
       foreignKeyName: "client_contacts_organization_id_fkey"
       columns: ["organization_id"]
 isOneToOne: false
@@ -285,6 +440,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "client_contracts_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
     },{
       foreignKeyName: "client_contracts_organization_id_fkey"
       columns: ["organization_id"]
@@ -361,18 +522,144 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_placement_margin"
       referencedColumns: ["placement_id"]
+    },{
+      foreignKeyName: "content_briefs_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "v_portal_placements"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"content_draft_versions": {
+                  Row: {
+                    "body_md": string,"created_at": string,"created_by": string | null,"draft_id": string,"id": string,"organization_id": string,"reason": string,"title": string | null,"version": number,"word_count": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body_md": string,"created_at"?: string,"created_by"?: string | null,"draft_id": string,"id"?: string,"organization_id": string,"reason"?: string,"title"?: string | null,"version": number,"word_count"?: number
+                  }
+                  Update: {
+                    "body_md"?: string,"created_at"?: string,"created_by"?: string | null,"draft_id"?: string,"id"?: string,"organization_id"?: string,"reason"?: string,"title"?: string | null,"version"?: number,"word_count"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "content_draft_versions_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "content_draft_versions_draft_id_fkey"
+      columns: ["draft_id"]
+isOneToOne: false
+      referencedRelation: "content_drafts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "content_draft_versions_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"content_drafts": {
+                  Row: {
+                    "approved_at": string | null,"approved_by": string | null,"body_md": string,"brief_id": string,"client_approval_note": string | null,"created_at": string,"created_by": string | null,"current_version": number | null,"id": string,"organization_id": string,"placement_id": string,"published_at": string | null,"status": string,"submitted_at": string | null,"title": string | null,"updated_at": string,"word_count": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "approved_at"?: string | null,"approved_by"?: string | null,"body_md"?: string,"brief_id": string,"client_approval_note"?: string | null,"created_at"?: string,"created_by"?: string | null,"current_version"?: number | null,"id"?: string,"organization_id": string,"placement_id": string,"published_at"?: string | null,"status"?: string,"submitted_at"?: string | null,"title"?: string | null,"updated_at"?: string,"word_count"?: number
+                  }
+                  Update: {
+                    "approved_at"?: string | null,"approved_by"?: string | null,"body_md"?: string,"brief_id"?: string,"client_approval_note"?: string | null,"created_at"?: string,"created_by"?: string | null,"current_version"?: number | null,"id"?: string,"organization_id"?: string,"placement_id"?: string,"published_at"?: string | null,"status"?: string,"submitted_at"?: string | null,"title"?: string | null,"updated_at"?: string,"word_count"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "content_drafts_approved_by_fkey"
+      columns: ["approved_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "content_drafts_brief_id_fkey"
+      columns: ["brief_id"]
+isOneToOne: false
+      referencedRelation: "content_briefs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "content_drafts_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "content_drafts_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "content_drafts_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "placements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "content_drafts_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "v_placement_margin"
+      referencedColumns: ["placement_id"]
+    },{
+      foreignKeyName: "content_drafts_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "v_portal_placements"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"content_revisions": {
+                  Row: {
+                    "created_at": string,"draft_id": string,"id": string,"notes": string,"organization_id": string,"requested_by": string | null,"resolved_at": string | null,"resolved_by_version": number | null,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"draft_id": string,"id"?: string,"notes": string,"organization_id": string,"requested_by"?: string | null,"resolved_at"?: string | null,"resolved_by_version"?: number | null,"status"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"draft_id"?: string,"id"?: string,"notes"?: string,"organization_id"?: string,"requested_by"?: string | null,"resolved_at"?: string | null,"resolved_by_version"?: number | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "content_revisions_draft_id_fkey"
+      columns: ["draft_id"]
+isOneToOne: false
+      referencedRelation: "content_drafts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "content_revisions_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "content_revisions_requested_by_fkey"
+      columns: ["requested_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
     }
                   ]
                 },"custom_field_definitions": {
                   Row: {
-                    "created_at": string,"entity_type": string,"field_type": string,"id": string,"is_required": boolean,"key": string,"label": string,"options": NonNullable<Json>,"organization_id": string,"sort_order": number
+                    "created_at": string,"entity_type": string,"field_type": string,"id": string,"is_active": boolean,"is_required": boolean,"key": string,"label": string,"options": NonNullable<Json>,"organization_id": string,"sort_order": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"entity_type": string,"field_type": string,"id"?: string,"is_required"?: boolean,"key": string,"label": string,"options"?: NonNullable<Json>,"organization_id": string,"sort_order"?: number
+                    "created_at"?: string,"entity_type": string,"field_type": string,"id"?: string,"is_active"?: boolean,"is_required"?: boolean,"key": string,"label": string,"options"?: NonNullable<Json>,"organization_id": string,"sort_order"?: number
                   }
                   Update: {
-                    "created_at"?: string,"entity_type"?: string,"field_type"?: string,"id"?: string,"is_required"?: boolean,"key"?: string,"label"?: string,"options"?: NonNullable<Json>,"organization_id"?: string,"sort_order"?: number
+                    "created_at"?: string,"entity_type"?: string,"field_type"?: string,"id"?: string,"is_active"?: boolean,"is_required"?: boolean,"key"?: string,"label"?: string,"options"?: NonNullable<Json>,"organization_id"?: string,"sort_order"?: number
                   }
                   Relationships: [
                     {
@@ -413,6 +700,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "custom_field_values_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
     },{
       foreignKeyName: "custom_field_values_definition_id_fkey"
       columns: ["definition_id"]
@@ -614,6 +907,12 @@ isOneToOne: false
       referencedRelation: "v_ar_aging"
       referencedColumns: ["invoice_id"]
     },{
+      foreignKeyName: "invoice_line_items_invoice_id_fkey"
+      columns: ["invoice_id"]
+isOneToOne: false
+      referencedRelation: "v_invoices"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "invoice_line_items_organization_id_fkey"
       columns: ["organization_id"]
 isOneToOne: false
@@ -631,26 +930,94 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_placement_margin"
       referencedColumns: ["placement_id"]
+    },{
+      foreignKeyName: "invoice_line_items_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "v_portal_placements"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"invoice_share_links": {
+                  Row: {
+                    "access_count": number,"created_at": string,"created_by": string | null,"expires_at": string | null,"id": string,"invoice_id": string,"last_accessed_at": string | null,"organization_id": string,"revoked_at": string | null,"revoked_by": string | null,"token_hash": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "access_count"?: number,"created_at"?: string,"created_by"?: string | null,"expires_at"?: string | null,"id"?: string,"invoice_id": string,"last_accessed_at"?: string | null,"organization_id": string,"revoked_at"?: string | null,"revoked_by"?: string | null,"token_hash": string
+                  }
+                  Update: {
+                    "access_count"?: number,"created_at"?: string,"created_by"?: string | null,"expires_at"?: string | null,"id"?: string,"invoice_id"?: string,"last_accessed_at"?: string | null,"organization_id"?: string,"revoked_at"?: string | null,"revoked_by"?: string | null,"token_hash"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "invoice_share_links_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "invoice_share_links_invoice_id_fkey"
+      columns: ["invoice_id"]
+isOneToOne: false
+      referencedRelation: "invoices"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "invoice_share_links_invoice_id_fkey"
+      columns: ["invoice_id"]
+isOneToOne: false
+      referencedRelation: "v_ar_aging"
+      referencedColumns: ["invoice_id"]
+    },{
+      foreignKeyName: "invoice_share_links_invoice_id_fkey"
+      columns: ["invoice_id"]
+isOneToOne: false
+      referencedRelation: "v_invoices"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "invoice_share_links_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "invoice_share_links_revoked_by_fkey"
+      columns: ["revoked_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
     }
                   ]
                 },"invoices": {
                   Row: {
-                    "client_id": string,"created_at": string,"currency": string,"due_date": string | null,"id": string,"invoice_number": string,"issued_at": string | null,"notes": string | null,"organization_id": string,"pdf_path": string | null,"period_end": string,"period_start": string,"status": string,"subtotal": number,"tax_amount": number,"tax_rate": number,"total": number,"updated_at": string
+                    "agency_partner_id": string | null,"cancelled_at": string | null,"client_id": string,"created_at": string,"currency": string,"discount_amount": number,"due_date": string | null,"id": string,"invoice_number": string,"issued_at": string | null,"notes": string | null,"organization_id": string,"payment_instructions": string | null,"pdf_path": string | null,"period_end": string,"period_start": string,"published_at": string | null,"snapshot": Json | null,"snapshot_hash": string | null,"snapshot_version": number,"status": string,"subtotal": number,"tax_amount": number,"tax_rate": number,"total": number,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "client_id": string,"created_at"?: string,"currency"?: string,"due_date"?: string | null,"id"?: string,"invoice_number": string,"issued_at"?: string | null,"notes"?: string | null,"organization_id": string,"pdf_path"?: string | null,"period_end": string,"period_start": string,"status"?: string,"subtotal"?: number,"tax_amount"?: number,"tax_rate"?: number,"total"?: number,"updated_at"?: string
+                    "agency_partner_id"?: string | null,"cancelled_at"?: string | null,"client_id": string,"created_at"?: string,"currency"?: string,"discount_amount"?: number,"due_date"?: string | null,"id"?: string,"invoice_number": string,"issued_at"?: string | null,"notes"?: string | null,"organization_id": string,"payment_instructions"?: string | null,"pdf_path"?: string | null,"period_end": string,"period_start": string,"published_at"?: string | null,"snapshot"?: Json | null,"snapshot_hash"?: string | null,"snapshot_version"?: number,"status"?: string,"subtotal"?: number,"tax_amount"?: number,"tax_rate"?: number,"total"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "client_id"?: string,"created_at"?: string,"currency"?: string,"due_date"?: string | null,"id"?: string,"invoice_number"?: string,"issued_at"?: string | null,"notes"?: string | null,"organization_id"?: string,"pdf_path"?: string | null,"period_end"?: string,"period_start"?: string,"status"?: string,"subtotal"?: number,"tax_amount"?: number,"tax_rate"?: number,"total"?: number,"updated_at"?: string
+                    "agency_partner_id"?: string | null,"cancelled_at"?: string | null,"client_id"?: string,"created_at"?: string,"currency"?: string,"discount_amount"?: number,"due_date"?: string | null,"id"?: string,"invoice_number"?: string,"issued_at"?: string | null,"notes"?: string | null,"organization_id"?: string,"payment_instructions"?: string | null,"pdf_path"?: string | null,"period_end"?: string,"period_start"?: string,"published_at"?: string | null,"snapshot"?: Json | null,"snapshot_hash"?: string | null,"snapshot_version"?: number,"status"?: string,"subtotal"?: number,"tax_amount"?: number,"tax_rate"?: number,"total"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "invoices_agency_partner_id_fkey"
+      columns: ["agency_partner_id"]
+isOneToOne: false
+      referencedRelation: "agency_partners"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "invoices_client_id_fkey"
       columns: ["client_id"]
 isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "invoices_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
     },{
       foreignKeyName: "invoices_organization_id_fkey"
       columns: ["organization_id"]
@@ -681,14 +1048,14 @@ isOneToOne: false
                   ]
                 },"link_checks": {
                   Row: {
-                    "checked_at": string,"checked_by": string,"found": boolean,"http_status": number | null,"id": string,"index_status": string | null,"organization_id": string,"placement_id": string,"raw": NonNullable<Json>,"rel_attribute": string | null
+                    "anchor_expected": string | null,"anchor_found": string | null,"anchor_matches": boolean | null,"checked_at": string,"checked_by": string,"elapsed_ms": number | null,"expected_url": string | null,"failure_reason": string | null,"found": boolean,"found_url": string | null,"http_final_url": string | null,"http_status": number | null,"id": string,"index_status": string | null,"organization_id": string,"placement_id": string,"raw": NonNullable<Json>,"rel_attribute": string | null,"rel_expected": string | null,"rel_matches": boolean | null,"url_matches": boolean | null,"verdict": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "checked_at"?: string,"checked_by"?: string,"found"?: boolean,"http_status"?: number | null,"id"?: string,"index_status"?: string | null,"organization_id": string,"placement_id": string,"raw"?: NonNullable<Json>,"rel_attribute"?: string | null
+                    "anchor_expected"?: string | null,"anchor_found"?: string | null,"anchor_matches"?: boolean | null,"checked_at"?: string,"checked_by"?: string,"elapsed_ms"?: number | null,"expected_url"?: string | null,"failure_reason"?: string | null,"found"?: boolean,"found_url"?: string | null,"http_final_url"?: string | null,"http_status"?: number | null,"id"?: string,"index_status"?: string | null,"organization_id": string,"placement_id": string,"raw"?: NonNullable<Json>,"rel_attribute"?: string | null,"rel_expected"?: string | null,"rel_matches"?: boolean | null,"url_matches"?: boolean | null,"verdict"?: string | null
                   }
                   Update: {
-                    "checked_at"?: string,"checked_by"?: string,"found"?: boolean,"http_status"?: number | null,"id"?: string,"index_status"?: string | null,"organization_id"?: string,"placement_id"?: string,"raw"?: NonNullable<Json>,"rel_attribute"?: string | null
+                    "anchor_expected"?: string | null,"anchor_found"?: string | null,"anchor_matches"?: boolean | null,"checked_at"?: string,"checked_by"?: string,"elapsed_ms"?: number | null,"expected_url"?: string | null,"failure_reason"?: string | null,"found"?: boolean,"found_url"?: string | null,"http_final_url"?: string | null,"http_status"?: number | null,"id"?: string,"index_status"?: string | null,"organization_id"?: string,"placement_id"?: string,"raw"?: NonNullable<Json>,"rel_attribute"?: string | null,"rel_expected"?: string | null,"rel_matches"?: boolean | null,"url_matches"?: boolean | null,"verdict"?: string | null
                   }
                   Relationships: [
                     {
@@ -709,18 +1076,50 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_placement_margin"
       referencedColumns: ["placement_id"]
+    },{
+      foreignKeyName: "link_checks_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "v_portal_placements"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"notification_preferences": {
+                  Row: {
+                    "created_at": string,"email_digest": boolean,"muted_types": (string)[],"organization_id": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"email_digest"?: boolean,"muted_types"?: (string)[],"organization_id": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"email_digest"?: boolean,"muted_types"?: (string)[],"organization_id"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "notification_preferences_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "notification_preferences_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
     }
                   ]
                 },"notifications": {
                   Row: {
-                    "created_at": string,"id": string,"organization_id": string,"payload": NonNullable<Json>,"read_at": string | null,"type": string,"user_id": string
+                    "created_at": string,"dedupe_key": string | null,"id": string,"organization_id": string,"payload": NonNullable<Json>,"read_at": string | null,"type": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"organization_id": string,"payload"?: NonNullable<Json>,"read_at"?: string | null,"type": string,"user_id": string
+                    "created_at"?: string,"dedupe_key"?: string | null,"id"?: string,"organization_id": string,"payload"?: NonNullable<Json>,"read_at"?: string | null,"type": string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"organization_id"?: string,"payload"?: NonNullable<Json>,"read_at"?: string | null,"type"?: string,"user_id"?: string
+                    "created_at"?: string,"dedupe_key"?: string | null,"id"?: string,"organization_id"?: string,"payload"?: NonNullable<Json>,"read_at"?: string | null,"type"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -750,6 +1149,56 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"outreach_records": {
+                  Row: {
+                    "body_excerpt": string | null,"campaign_id": string,"created_at": string,"delivery_provider": string | null,"follow_up_count": number,"follow_up_due_at": string | null,"id": string,"kind": string,"organization_id": string,"owner_id": string | null,"prospect_id": string,"provider_message_id": string | null,"recipient_email": string | null,"responded_at": string | null,"response_status": string | null,"sent_at": string | null,"status": string,"subject": string | null,"template_id": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body_excerpt"?: string | null,"campaign_id": string,"created_at"?: string,"delivery_provider"?: string | null,"follow_up_count"?: number,"follow_up_due_at"?: string | null,"id"?: string,"kind"?: string,"organization_id": string,"owner_id"?: string | null,"prospect_id": string,"provider_message_id"?: string | null,"recipient_email"?: string | null,"responded_at"?: string | null,"response_status"?: string | null,"sent_at"?: string | null,"status"?: string,"subject"?: string | null,"template_id"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "body_excerpt"?: string | null,"campaign_id"?: string,"created_at"?: string,"delivery_provider"?: string | null,"follow_up_count"?: number,"follow_up_due_at"?: string | null,"id"?: string,"kind"?: string,"organization_id"?: string,"owner_id"?: string | null,"prospect_id"?: string,"provider_message_id"?: string | null,"recipient_email"?: string | null,"responded_at"?: string | null,"response_status"?: string | null,"sent_at"?: string | null,"status"?: string,"subject"?: string | null,"template_id"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "outreach_records_campaign_id_fkey"
+      columns: ["campaign_id"]
+isOneToOne: false
+      referencedRelation: "campaigns"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "outreach_records_campaign_id_fkey"
+      columns: ["campaign_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_progress"
+      referencedColumns: ["campaign_id"]
+    },{
+      foreignKeyName: "outreach_records_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "outreach_records_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "outreach_records_prospect_id_fkey"
+      columns: ["prospect_id"]
+isOneToOne: false
+      referencedRelation: "prospects"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "outreach_records_template_id_fkey"
+      columns: ["template_id"]
+isOneToOne: false
+      referencedRelation: "email_templates"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"outreach_touchpoints": {
                   Row: {
@@ -808,6 +1257,12 @@ isOneToOne: false
       referencedRelation: "v_ar_aging"
       referencedColumns: ["invoice_id"]
     },{
+      foreignKeyName: "payments_invoice_id_fkey"
+      columns: ["invoice_id"]
+isOneToOne: false
+      referencedRelation: "v_invoices"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "payments_organization_id_fkey"
       columns: ["organization_id"]
 isOneToOne: false
@@ -823,14 +1278,14 @@ isOneToOne: false
                   ]
                 },"pipeline_stages": {
                   Row: {
-                    "created_at": string,"id": string,"is_lost": boolean,"is_won": boolean,"key": string,"label": string,"organization_id": string,"sort_order": number,"updated_at": string
+                    "applies_to": string,"created_at": string,"id": string,"is_lost": boolean,"is_won": boolean,"key": string,"label": string,"organization_id": string,"sort_order": number,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"is_lost"?: boolean,"is_won"?: boolean,"key": string,"label": string,"organization_id": string,"sort_order"?: number,"updated_at"?: string
+                    "applies_to"?: string,"created_at"?: string,"id"?: string,"is_lost"?: boolean,"is_won"?: boolean,"key": string,"label": string,"organization_id": string,"sort_order"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"is_lost"?: boolean,"is_won"?: boolean,"key"?: string,"label"?: string,"organization_id"?: string,"sort_order"?: number,"updated_at"?: string
+                    "applies_to"?: string,"created_at"?: string,"id"?: string,"is_lost"?: boolean,"is_won"?: boolean,"key"?: string,"label"?: string,"organization_id"?: string,"sort_order"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -843,17 +1298,23 @@ isOneToOne: false
                   ]
                 },"placement_costs": {
                   Row: {
-                    "created_at": string,"currency": string,"id": string,"organization_id": string,"paid": boolean,"placement_id": string,"supplier_cost": number,"supplier_id": string | null,"updated_at": string
+                    "agreed_at": string | null,"agreed_by": string | null,"created_at": string,"currency": string,"id": string,"organization_id": string,"paid": boolean,"placement_id": string,"supplier_cost": number,"supplier_id": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"currency"?: string,"id"?: string,"organization_id": string,"paid"?: boolean,"placement_id": string,"supplier_cost"?: number,"supplier_id"?: string | null,"updated_at"?: string
+                    "agreed_at"?: string | null,"agreed_by"?: string | null,"created_at"?: string,"currency"?: string,"id"?: string,"organization_id": string,"paid"?: boolean,"placement_id": string,"supplier_cost"?: number,"supplier_id"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"currency"?: string,"id"?: string,"organization_id"?: string,"paid"?: boolean,"placement_id"?: string,"supplier_cost"?: number,"supplier_id"?: string | null,"updated_at"?: string
+                    "agreed_at"?: string | null,"agreed_by"?: string | null,"created_at"?: string,"currency"?: string,"id"?: string,"organization_id"?: string,"paid"?: boolean,"placement_id"?: string,"supplier_cost"?: number,"supplier_id"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "placement_costs_agreed_by_fkey"
+      columns: ["agreed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "placement_costs_organization_id_fkey"
       columns: ["organization_id"]
 isOneToOne: false
@@ -872,10 +1333,60 @@ isOneToOne: true
       referencedRelation: "v_placement_margin"
       referencedColumns: ["placement_id"]
     },{
+      foreignKeyName: "placement_costs_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: true
+      referencedRelation: "v_portal_placements"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "placement_costs_supplier_id_fkey"
       columns: ["supplier_id"]
 isOneToOne: false
       referencedRelation: "suppliers"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"placement_events": {
+                  Row: {
+                    "actor_id": string | null,"actor_name": string | null,"created_at": string,"detail": NonNullable<Json>,"event_type": string,"from_stage": string | null,"id": string,"organization_id": string,"placement_id": string,"summary": string | null,"to_stage": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actor_id"?: string | null,"actor_name"?: string | null,"created_at"?: string,"detail"?: NonNullable<Json>,"event_type": string,"from_stage"?: string | null,"id"?: string,"organization_id": string,"placement_id": string,"summary"?: string | null,"to_stage"?: string | null
+                  }
+                  Update: {
+                    "actor_id"?: string | null,"actor_name"?: string | null,"created_at"?: string,"detail"?: NonNullable<Json>,"event_type"?: string,"from_stage"?: string | null,"id"?: string,"organization_id"?: string,"placement_id"?: string,"summary"?: string | null,"to_stage"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "placement_events_actor_id_fkey"
+      columns: ["actor_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "placement_events_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "placement_events_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "placements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "placement_events_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "v_placement_margin"
+      referencedColumns: ["placement_id"]
+    },{
+      foreignKeyName: "placement_events_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "v_portal_placements"
       referencedColumns: ["id"]
     }
                   ]
@@ -909,21 +1420,33 @@ isOneToOne: true
 isOneToOne: true
       referencedRelation: "v_placement_margin"
       referencedColumns: ["placement_id"]
+    },{
+      foreignKeyName: "placement_pricing_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: true
+      referencedRelation: "v_portal_placements"
+      referencedColumns: ["id"]
     }
                   ]
                 },"placements": {
                   Row: {
-                    "anchor_text": string | null,"anchor_type": string | null,"campaign_id": string,"created_at": string,"deleted_at": string | null,"id": string,"index_status": string,"index_status_manual": boolean,"last_checked_at": string | null,"link_type": string | null,"live_date": string | null,"live_url": string | null,"notes": string | null,"organization_id": string,"prospect_id": string | null,"publisher_id": string | null,"rel_attribute": string | null,"removal_detected_at": string | null,"scheduled_date": string | null,"status": string,"supplier_id": string | null,"target_url": string,"updated_at": string
+                    "anchor_text": string | null,"anchor_type": string | null,"assigned_to": string | null,"campaign_id": string,"client_approval_note": string | null,"client_approved_at": string | null,"client_approved_by": string | null,"client_rejected_reason": string | null,"content_assignee": string | null,"content_due_date": string | null,"created_at": string,"deleted_at": string | null,"id": string,"index_status": string,"index_status_manual": boolean,"internal_notes": string | null,"last_checked_at": string | null,"link_type": string | null,"live_date": string | null,"live_url": string | null,"notes": string | null,"organization_id": string,"pipeline_stage": string,"prospect_id": string | null,"publisher_id": string | null,"rel_attribute": string | null,"removal_detected_at": string | null,"scheduled_date": string | null,"status": string,"submitted_at": string | null,"supplier_id": string | null,"target_url": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "anchor_text"?: string | null,"anchor_type"?: string | null,"campaign_id": string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"index_status"?: string,"index_status_manual"?: boolean,"last_checked_at"?: string | null,"link_type"?: string | null,"live_date"?: string | null,"live_url"?: string | null,"notes"?: string | null,"organization_id": string,"prospect_id"?: string | null,"publisher_id"?: string | null,"rel_attribute"?: string | null,"removal_detected_at"?: string | null,"scheduled_date"?: string | null,"status"?: string,"supplier_id"?: string | null,"target_url": string,"updated_at"?: string
+                    "anchor_text"?: string | null,"anchor_type"?: string | null,"assigned_to"?: string | null,"campaign_id": string,"client_approval_note"?: string | null,"client_approved_at"?: string | null,"client_approved_by"?: string | null,"client_rejected_reason"?: string | null,"content_assignee"?: string | null,"content_due_date"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"index_status"?: string,"index_status_manual"?: boolean,"internal_notes"?: string | null,"last_checked_at"?: string | null,"link_type"?: string | null,"live_date"?: string | null,"live_url"?: string | null,"notes"?: string | null,"organization_id": string,"pipeline_stage"?: string,"prospect_id"?: string | null,"publisher_id"?: string | null,"rel_attribute"?: string | null,"removal_detected_at"?: string | null,"scheduled_date"?: string | null,"status"?: string,"submitted_at"?: string | null,"supplier_id"?: string | null,"target_url": string,"updated_at"?: string
                   }
                   Update: {
-                    "anchor_text"?: string | null,"anchor_type"?: string | null,"campaign_id"?: string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"index_status"?: string,"index_status_manual"?: boolean,"last_checked_at"?: string | null,"link_type"?: string | null,"live_date"?: string | null,"live_url"?: string | null,"notes"?: string | null,"organization_id"?: string,"prospect_id"?: string | null,"publisher_id"?: string | null,"rel_attribute"?: string | null,"removal_detected_at"?: string | null,"scheduled_date"?: string | null,"status"?: string,"supplier_id"?: string | null,"target_url"?: string,"updated_at"?: string
+                    "anchor_text"?: string | null,"anchor_type"?: string | null,"assigned_to"?: string | null,"campaign_id"?: string,"client_approval_note"?: string | null,"client_approved_at"?: string | null,"client_approved_by"?: string | null,"client_rejected_reason"?: string | null,"content_assignee"?: string | null,"content_due_date"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"index_status"?: string,"index_status_manual"?: boolean,"internal_notes"?: string | null,"last_checked_at"?: string | null,"link_type"?: string | null,"live_date"?: string | null,"live_url"?: string | null,"notes"?: string | null,"organization_id"?: string,"pipeline_stage"?: string,"prospect_id"?: string | null,"publisher_id"?: string | null,"rel_attribute"?: string | null,"removal_detected_at"?: string | null,"scheduled_date"?: string | null,"status"?: string,"submitted_at"?: string | null,"supplier_id"?: string | null,"target_url"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "placements_assigned_to_fkey"
+      columns: ["assigned_to"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "placements_campaign_id_fkey"
       columns: ["campaign_id"]
 isOneToOne: false
@@ -935,6 +1458,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_campaign_progress"
       referencedColumns: ["campaign_id"]
+    },{
+      foreignKeyName: "placements_client_approved_by_fkey"
+      columns: ["client_approved_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "placements_content_assignee_fkey"
+      columns: ["content_assignee"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
     },{
       foreignKeyName: "placements_organization_id_fkey"
       columns: ["organization_id"]
@@ -1103,14 +1638,14 @@ isOneToOne: false
                   ]
                 },"saved_views": {
                   Row: {
-                    "created_at": string,"filters": NonNullable<Json>,"id": string,"is_shared": boolean,"module": string,"name": string,"organization_id": string,"sort": NonNullable<Json>,"updated_at": string,"user_id": string
+                    "created_at": string,"filters": NonNullable<Json>,"id": string,"is_default": boolean,"is_shared": boolean,"is_system": boolean,"module": string,"name": string,"organization_id": string,"sort": NonNullable<Json>,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"filters"?: NonNullable<Json>,"id"?: string,"is_shared"?: boolean,"module": string,"name": string,"organization_id": string,"sort"?: NonNullable<Json>,"updated_at"?: string,"user_id": string
+                    "created_at"?: string,"filters"?: NonNullable<Json>,"id"?: string,"is_default"?: boolean,"is_shared"?: boolean,"is_system"?: boolean,"module": string,"name": string,"organization_id": string,"sort"?: NonNullable<Json>,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"filters"?: NonNullable<Json>,"id"?: string,"is_shared"?: boolean,"module"?: string,"name"?: string,"organization_id"?: string,"sort"?: NonNullable<Json>,"updated_at"?: string,"user_id"?: string
+                    "created_at"?: string,"filters"?: NonNullable<Json>,"id"?: string,"is_default"?: boolean,"is_shared"?: boolean,"is_system"?: boolean,"module"?: string,"name"?: string,"organization_id"?: string,"sort"?: NonNullable<Json>,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -1158,6 +1693,12 @@ isOneToOne: false
       referencedRelation: "v_placement_margin"
       referencedColumns: ["placement_id"]
     },{
+      foreignKeyName: "supplier_bills_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "v_portal_placements"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "supplier_bills_supplier_id_fkey"
       columns: ["supplier_id"]
 isOneToOne: false
@@ -1185,6 +1726,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"ui_settings": {
+                  Row: {
+                    "config": NonNullable<Json>,"created_at": string,"organization_id": string,"updated_at": string,"updated_by": string | null,"version": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "config"?: NonNullable<Json>,"created_at"?: string,"organization_id": string,"updated_at"?: string,"updated_by"?: string | null,"version"?: number
+                  }
+                  Update: {
+                    "config"?: NonNullable<Json>,"created_at"?: string,"organization_id"?: string,"updated_at"?: string,"updated_by"?: string | null,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ui_settings_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: true
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ui_settings_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"user_client_access": {
                   Row: {
                     "client_id": string,"created_at": string,"organization_id": string,"user_id": string
@@ -1204,6 +1771,12 @@ isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "user_client_access_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
+    },{
       foreignKeyName: "user_client_access_organization_id_fkey"
       columns: ["organization_id"]
 isOneToOne: false
@@ -1212,6 +1785,68 @@ isOneToOne: false
     },{
       foreignKeyName: "user_client_access_user_id_fkey"
       columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"writer_payouts": {
+                  Row: {
+                    "amount": number,"campaign_id": string | null,"created_at": string,"created_by": string | null,"currency": string,"description": string | null,"fee_type": string,"id": string,"notes": string | null,"organization_id": string,"paid_at": string | null,"placement_id": string | null,"reference": string | null,"status": string,"updated_at": string,"writer_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount": number,"campaign_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"description"?: string | null,"fee_type"?: string,"id"?: string,"notes"?: string | null,"organization_id": string,"paid_at"?: string | null,"placement_id"?: string | null,"reference"?: string | null,"status"?: string,"updated_at"?: string,"writer_id"?: string | null
+                  }
+                  Update: {
+                    "amount"?: number,"campaign_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"description"?: string | null,"fee_type"?: string,"id"?: string,"notes"?: string | null,"organization_id"?: string,"paid_at"?: string | null,"placement_id"?: string | null,"reference"?: string | null,"status"?: string,"updated_at"?: string,"writer_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "writer_payouts_campaign_id_fkey"
+      columns: ["campaign_id"]
+isOneToOne: false
+      referencedRelation: "campaigns"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "writer_payouts_campaign_id_fkey"
+      columns: ["campaign_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_progress"
+      referencedColumns: ["campaign_id"]
+    },{
+      foreignKeyName: "writer_payouts_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "writer_payouts_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "writer_payouts_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "placements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "writer_payouts_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "v_placement_margin"
+      referencedColumns: ["placement_id"]
+    },{
+      foreignKeyName: "writer_payouts_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: false
+      referencedRelation: "v_portal_placements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "writer_payouts_writer_id_fkey"
+      columns: ["writer_id"]
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
@@ -1233,6 +1868,12 @@ isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "campaigns_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
+    },{
       foreignKeyName: "placements_campaign_id_fkey"
       columns: ["campaign_id"]
 isOneToOne: false
@@ -1244,6 +1885,32 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_campaign_progress"
       referencedColumns: ["campaign_id"]
+    },{
+      foreignKeyName: "placements_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"v_anchor_distribution_client": {
+                  Row: {
+                    "anchor_type": string | null,"client_id": string,"link_count": number | null,"organization_id": string,"share": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "campaigns_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "campaigns_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
     },{
       foreignKeyName: "placements_organization_id_fkey"
       columns: ["organization_id"]
@@ -1265,12 +1932,26 @@ isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "invoices_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
+    },{
       foreignKeyName: "invoices_organization_id_fkey"
       columns: ["organization_id"]
 isOneToOne: false
       referencedRelation: "organizations"
       referencedColumns: ["id"]
     }
+                  ]
+                },"v_campaign_profitability": {
+                  Row: {
+                    "campaign_id": string | null,"campaign_name": string,"client_id": string,"client_name": string,"currency": string | null,"gross_profit": number | null,"margin_pct": number | null,"multi_currency": boolean | null,"organization_id": string | null,"other_expenses": number | null,"priced_placements": number | null,"publisher_cost": number | null,"revenue": number | null,"unpriced_placements": number | null,"writer_payouts": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
                   ]
                 },"v_campaign_progress": {
                   Row: {
@@ -1285,6 +1966,12 @@ isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "campaigns_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
+    },{
       foreignKeyName: "campaigns_organization_id_fkey"
       columns: ["organization_id"]
 isOneToOne: false
@@ -1294,16 +1981,52 @@ isOneToOne: false
                   ]
                 },"v_client_profitability": {
                   Row: {
-                    "billed": number | null,"client_id": string,"collected": number | null,"invoice_count": number | null,"margin": number | null,"organization_id": string,"period_month": string | null
+                    "billed": number | null,"client_id": string | null,"collected": number | null,"invoice_count": number | null,"margin": number | null,"organization_id": string | null,"period_month": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
+                },"v_financial_ledger": {
+                  Row: {
+                    "amount": number | null,"campaign_id": string | null,"client_id": string | null,"currency": string | null,"direction": string | null,"entry_type": string | null,"occurred_at": string | null,"organization_id": string | null,"reference": string | null,"source_id": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
+                },"v_financial_summary": {
+                  Row: {
+                    "billed": number | null,"collected": number | null,"currency": string | null,"gross_profit": number | null,"margin_pct": number | null,"organization_id": string | null,"other_expenses": number | null,"outstanding_ar": number | null,"publisher_cost": number | null,"publisher_costs_outstanding": number | null,"revenue": number | null,"writer_payouts": number | null,"writer_payouts_outstanding": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
+                },"v_invoices": {
+                  Row: {
+                    "agency_partner_id": string | null,"agency_partner_name": string | null,"balance": number | null,"cancelled_at": string | null,"client_id": string,"client_name": string,"created_at": string,"currency": string,"days_overdue": number | null,"discount_amount": number,"due_date": string | null,"effective_status": string | null,"id": string,"invoice_number": string,"issued_at": string | null,"notes": string | null,"organization_id": string,"paid_amount": number | null,"payment_instructions": string | null,"pdf_path": string | null,"period_end": string,"period_start": string,"published_at": string | null,"snapshot": Json | null,"snapshot_hash": string | null,"snapshot_version": number,"status": string,"subtotal": number,"tax_amount": number,"tax_rate": number,"total": number,"updated_at": string
                   }
                   ComputedFields: never
                   Relationships: [
                     {
+      foreignKeyName: "invoices_agency_partner_id_fkey"
+      columns: ["agency_partner_id"]
+isOneToOne: false
+      referencedRelation: "agency_partners"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "invoices_client_id_fkey"
       columns: ["client_id"]
 isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "invoices_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
     },{
       foreignKeyName: "invoices_organization_id_fkey"
       columns: ["organization_id"]
@@ -1351,6 +2074,12 @@ isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "campaigns_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_profitability"
+      referencedColumns: ["client_id"]
+    },{
       foreignKeyName: "placements_campaign_id_fkey"
       columns: ["campaign_id"]
 isOneToOne: false
@@ -1376,17 +2105,116 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"v_placement_negotiation": {
+                  Row: {
+                    "agreed_at": string | null,"agreed_by": string | null,"currency": string,"placement_id": string,"supplier_cost": number,"supplier_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "agreed_at"?: string | null,"agreed_by"?: string | null,"currency"?: string | null,"placement_id"?: string | null,"supplier_cost"?: number | null,"supplier_id"?: string | null
+                         }
+                        Update: {
+                           "agreed_at"?: string | null,"agreed_by"?: string | null,"currency"?: string | null,"placement_id"?: string | null,"supplier_cost"?: number | null,"supplier_id"?: string | null
+                         }
+                        Relationships: [
+                    {
+      foreignKeyName: "placement_costs_agreed_by_fkey"
+      columns: ["agreed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "placement_costs_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: true
+      referencedRelation: "placements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "placement_costs_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: true
+      referencedRelation: "v_placement_margin"
+      referencedColumns: ["placement_id"]
+    },{
+      foreignKeyName: "placement_costs_placement_id_fkey"
+      columns: ["placement_id"]
+isOneToOne: true
+      referencedRelation: "v_portal_placements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "placement_costs_supplier_id_fkey"
+      columns: ["supplier_id"]
+isOneToOne: false
+      referencedRelation: "suppliers"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"v_portal_placements": {
+                  Row: {
+                    "anchor_text": string | null,"anchor_type": string | null,"campaign_id": string,"client_approval_note": string | null,"client_approved_at": string | null,"id": string,"index_status": string,"link_type": string | null,"live_date": string | null,"live_url": string | null,"notes": string | null,"organization_id": string,"pipeline_stage": string,"rel_attribute": string | null,"status": string,"target_url": string
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "placements_campaign_id_fkey"
+      columns: ["campaign_id"]
+isOneToOne: false
+      referencedRelation: "campaigns"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "placements_campaign_id_fkey"
+      columns: ["campaign_id"]
+isOneToOne: false
+      referencedRelation: "v_campaign_progress"
+      referencedColumns: ["campaign_id"]
+    },{
+      foreignKeyName: "placements_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Functions: {
-            "next_document_number_rpc":
+            "archive_record_rpc":
+{ Args: { "p_id": string,"p_roles": (string)[],"p_table": string }; Returns: {
+              "id": string,"label": string
+            }[]
+                           },
+"client_approve_draft_rpc":
+{ Args: { "p_draft_id": string,"p_note"?: string }; Returns: {
+              "approved_at": string,"id": string,"status": string
+            }[]
+                           },
+"client_request_draft_revision_rpc":
+{ Args: { "p_draft_id": string,"p_note": string }; Returns: {
+              "id": string,"status": string
+            }[]
+                           },
+"emit_notification_rpc":
+{ Args: { "p_dedupe_key"?: string,"p_org": string,"p_payload": Json,"p_type": string,"p_user": string }; Returns: string
+                           },
+"next_document_number_rpc":
 { Args: { "p_org": string,"p_type": string }; Returns: number
+                           },
+"resolve_invoice_share":
+{ Args: { "p_token_hash": string }; Returns: {
+              "balance": number,"due_date": string,"effective_status": string,"expires_at": string,"invoice_id": string,"invoice_number": string,"issued_at": string,"organization_id": string,"paid_amount": number,"snapshot": Json,"total": number
+            }[]
+                           },
+"restore_record_rpc":
+{ Args: { "p_id": string,"p_roles": (string)[],"p_table": string }; Returns: boolean
                            },
 "show_limit":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
 "show_trgm":
 { Args: { "": string }; Returns: (string)[]
+                           },
+"touch_invoice_share":
+{ Args: { "p_token_hash": string }; Returns: undefined
                            }
           }
           Enums: {
@@ -1514,4 +2342,6 @@ export const Constants = {
           }
         }
 } as const
-
+A new version of Supabase CLI is available: v3.3.0 (currently installed v3.2.0)
+We recommend updating regularly for new features and bug fixes: 
+https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli

@@ -10,7 +10,8 @@
     "start": "node dist/server.js",
     "start:prod": "cross-env NODE_ENV=production node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "// test": "NODE_ENV is pinned to `test` here, not inherited. A test run must not depend on whatever NODE_ENV happens to be set in the developer's shell — importing config/env.ts under production with development defaults aborts the whole runner instead of failing one test.",
+    "test": "cross-env NODE_ENV=test vitest run --passWithNoTests"
   },
   "dependencies": {
     "@crm/shared": "workspace:*",

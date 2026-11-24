@@ -273,14 +273,28 @@ describe("content draft visibility", () => {
 
     // A brief assigned to the OWNER, not the writer.
     const { data: owner } = await svc.from("profiles").select("id").eq("email", "owner@demo.test").single();
-    const { data: placement } = await svc
+
+    // Pick a placement that has NO brief yet — deterministically.
+    //
+    // This used to be `.limit(1)` with no ORDER BY, which Postgres is free to
+    // satisfy however it likes. The seed already gives one placement a brief, and
+    // migration 0021 enforces `content_briefs_one_per_placement_idx` — so whenever
+    // the arbitrary choice landed on that placement the insert failed, `brief` came
+    // back null, and `brief!.id` threw. The test failed roughly half the time on an
+    // UNCHANGED schema, which is worse than failing: it makes the suite untrustworthy.
+    const { data: placements } = await svc
       .from("placements")
       .select("id, campaign_id, organization_id")
       .eq("organization_id", orgId)
-      .limit(1)
-      .single();
+      .order("id");
 
-    const { data: brief } = await svc
+    const { data: existingBriefs } = await svc.from("content_briefs").select("placement_id");
+    const taken = new Set((existingBriefs ?? []).map((b) => b.placement_id));
+    const placement = (placements ?? []).find((p) => !taken.has(p.id));
+
+    expect(placement, "the seed must leave at least one placement without a brief").toBeDefined();
+
+    const { data: brief, error: briefErr } = await svc
       .from("content_briefs")
       .insert({
         organization_id: orgId,
@@ -291,7 +305,13 @@ describe("content draft visibility", () => {
       .select("id")
       .single();
 
-    const { data: draft } = await svc
+    // Assert the CALL, not a downstream deref. Without this a constraint violation
+    // surfaced as "Cannot read properties of null (reading 'id')" two steps later,
+    // which points at the wrong line entirely.
+    expect(briefErr, `brief insert failed: ${briefErr?.message ?? ""}`).toBeNull();
+    expect(brief).not.toBeNull();
+
+    const { data: draft, error: draftErr } = await svc
       .from("content_drafts")
       .insert({
         organization_id: orgId,
@@ -303,6 +323,9 @@ describe("content draft visibility", () => {
       })
       .select("id")
       .single();
+
+    expect(draftErr, `draft insert failed: ${draftErr?.message ?? ""}`).toBeNull();
+    expect(draft).not.toBeNull();
 
     const db = await asRole("content_writer");
     const { data: visible } = await db.from("content_drafts").select("id").eq("id", draft!.id);
@@ -420,10 +443,27 @@ describe("invoice and payment integrity", () => {
 
   it("a partial payment leaves the invoice partially_paid", async () => {
     const svc = serviceClient();
-    const { data: invoice } = await svc.from("invoices").select("status, total").eq("id", invoiceId).single();
+
+    // Read `v_invoices`, not `invoices`.
+    //
+    // Two migrations changed what this test should ask. 0028 renamed the expected
+    // value (`sent` -> `issued`). 0031 made status DERIVED: `invoices.status` is
+    // only an INPUT, and the business truth is `effective_status`, which the view
+    // computes from the payment rows. A 1800 invoice with 900 paid stores
+    // `status = 'issued'` and is correctly derived as `partially_paid` — so
+    // asserting the raw column failed while the invoice was exactly right.
+    const { data: invoice } = await svc
+      .from("v_invoices")
+      .select("status, total, paid_amount, balance, effective_status")
+      .eq("id", invoiceId)
+      .single();
+
+    expect(invoice).not.toBeNull();
     expect(Number(invoice!.total)).toBeGreaterThan(0);
     // Seeded with 900 paid against a 1500 subtotal + 20% tax = 1800.
-    expect(invoice!.status).toBe("partially_paid");
+    expect(Number(invoice!.paid_amount)).toBe(900);
+    expect(Number(invoice!.balance)).toBe(900);
+    expect(invoice!.effective_status).toBe("partially_paid");
   });
 
   it("allocates distinct invoice numbers under concurrency", async () => {
