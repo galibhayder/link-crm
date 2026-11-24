@@ -1,6 +1,7 @@
 import {
   cloneElement,
   forwardRef,
+  Fragment,
   isValidElement,
   useId,
   type InputHTMLAttributes,
@@ -134,6 +135,16 @@ function isFormControlTag(tag: string): boolean {
  * Only the first child is touched, because that is the control in every layout this
  * is used for (control + trailing link). The wrapper itself gets NO id — that was
  * the duplicate.
+ *
+ * KEYS ARE REQUIRED HERE. `kids.map()` turns what were static JSX children into an
+ * array, and React requires every element in an array to have a key. Without this,
+ * every form on the site logged:
+ *
+ *   Warning: Each child in a list should have a unique "key" prop.
+ *
+ * The original children usually have no key (they are not in a list), so fall back
+ * to the index. That is stable for this layout — the wrapper's children never
+ * reorder; if they ever do, the key follows the original when one is present.
  */
 function injectIdIntoFirstChild(node: React.ReactNode, id: string): React.ReactNode {
   if (!isValidElement(node)) return node;
@@ -142,10 +153,16 @@ function injectIdIntoFirstChild(node: React.ReactNode, id: string): React.ReactN
   const kids = Array.isArray(props.children) ? props.children : [props.children];
   let done = false;
 
-  const next = kids.map((kid) => {
-    if (done || !isValidElement(kid)) return kid;
+  const next = kids.map((kid, index) => {
+    if (!isValidElement(kid)) return kid;
+    // `key` must be passed as a literal prop, never spread: React warns
+    // "A props object containing a key prop is being spread into JSX".
+    const key = kid.key ?? `field-child-${index}`;
+    if (done) return <Fragment key={key}>{kid}</Fragment>;
+
     done = true;
     return cloneElement(kid as React.ReactElement<{ id?: string }>, {
+      key,
       id: (kid.props as { id?: string }).id ?? id,
     });
   });

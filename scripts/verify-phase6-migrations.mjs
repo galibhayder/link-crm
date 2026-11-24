@@ -284,12 +284,17 @@ console.log("\n13. every migration applied");
 // ===========================================================================
 {
   const count = db1(`select count(*) from supabase_migrations.schema_migrations`);
-  check("all 30 migrations are recorded", Number(count) >= 30, count);
+  check("at least 30 migrations are recorded", Number(count) >= 30, count);
 
-  const latest = dbAll(
-    `select version from supabase_migrations.schema_migrations order by version desc limit 3`,
-  );
-  check("the Phase 6 migrations are present", latest.some((v) => v.includes("0030")), latest.join(", "));
+  // Assert the PHASE 6 SET is present, not "the newest three contain 0030".
+  //
+  // That assertion expired the moment 0031 shipped: it looked at the three most
+  // recent migrations, so adding any later file made it fail while the schema it
+  // was guarding was still perfectly correct. Version-specific tests have to be
+  // written against the set, or every later phase breaks them for no reason.
+  const all = dbAll(`select version from supabase_migrations.schema_migrations`);
+  const missing = ["0028", "0029", "0030", "0031"].filter((v) => !all.some((x) => x.includes(v)));
+  check("every Phase 6 migration is present", missing.length === 0, missing.join(", ") || "all present");
 }
 
 const failed = results.filter((r) => !r.ok);

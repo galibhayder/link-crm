@@ -303,7 +303,14 @@ console.log("\n6. notification preferences — own row only");
   const initial = await api("/api/v1/notifications/preferences", T.owner);
   check("preferences read returns defaults", initial.status === 200, String(initial.status));
   check("no types are muted initially", (initial.body?.data?.mutedTypes ?? []).length === 0);
-  check("the available types are listed", (initial.body?.data?.availableTypes ?? []).length === 3);
+  check(
+    "the available types are listed",
+    // Asserted against the type list, not a magic number. A hardcoded 3 broke the
+    // moment a fourth type shipped, while the endpoint it was guarding was fine.
+    (initial.body?.data?.availableTypes ?? []).includes("anchor_alert") &&
+      (initial.body?.data?.availableTypes ?? []).includes("follow_up_due"),
+    (initial.body?.data?.availableTypes ?? []).join(", "),
+  );
 
   const set = await api("/api/v1/notifications/preferences", T.owner, {
     method: "PUT",
