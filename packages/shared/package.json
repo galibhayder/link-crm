@@ -1,0 +1,31 @@
+{
+  "name": "@crm/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "//": "Dual resolution. In development the tools (tsx, Vite) load the TypeScript source, so editing a shared schema is picked up without a rebuild. In production plain Node loads dist/*.js — it cannot execute .ts, which is why `node dist/server.js` failed to start until this was added.",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
