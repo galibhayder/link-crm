@@ -1,0 +1,133 @@
+name: Deploy
+
+# Builds the Hostinger artifact on a clean runner and uploads it over SSH/rsync.
+#
+# WHY NOT LET HOSTINGER BUILD THE REPO: this is a pnpm/Turbo monorepo and the API
+# depends on `@crm/shared` via `workspace:*`, which `npm install` cannot resolve.
+# The SPA also bakes VITE_* values in at build time. So the artifact is produced
+# here, exactly as it is locally (`pnpm build:hostinger`), and only the finished,
+# boot-verified directory is shipped.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   SUPABASE_URL                 https://<ref>.supabase.co
+#   SUPABASE_ANON_KEY            the anon public key
+#   SUPABASE_SERVICE_ROLE_KEY    the service_role key (used only by the boot check)
+#   JOB_HMAC_SECRET              32+ chars
+#   HOSTINGER_SSH_HOST           host or IP shown under hPanel → SSH Access
+#   HOSTINGER_SSH_USER           SSH username
+#   HOSTINGER_SSH_KEY            private key with access to the app directory
+#   HOSTINGER_SSH_PORT           optional, defaults to 22
+#   HOSTINGER_DEPLOY_PATH        directory holding server.js, e.g.
+#                                /home/uXXXXXXXX/domains/crm.triveromarketing.com/public_html
+#   HOSTINGER_RESTART_CMD        optional shell command to restart the Node app
+#
+# The runtime environment variables themselves (NODE_ENV, CORS_ORIGINS, etc.) are
+# NOT set here — they live in the Hostinger panel and apply to the running process.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Serialise deploys; never cancel one halfway through an upload.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy to Hostinger
+    runs-on: ubuntu-latest
+
+    env:
+      # Build-time values, inlined into the browser bundle. Must be the hosted project.
+      VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      VITE_API_URL: ""
+      VITE_APP_NAME: Trivero Marketing
+
+      # Used only by the artifact boot check inside `pnpm build:hostinger`.
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      JOB_HMAC_SECRET: ${{ secrets.JOB_HMAC_SECRET }}
+      CORS_ORIGINS: https://crm.triveromarketing.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # `verify-hostinger-artifact.mjs` reads apps/api/.env to boot the packed
+      # server. That file is gitignored, so it is materialised here from secrets
+      # instead of being committed.
+      - name: Provide local env for the artifact boot check
+        run: |
+          cat > apps/api/.env <<EOF
+          SUPABASE_URL=$SUPABASE_URL
+          SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+          SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY
+          JOB_HMAC_SECRET=$JOB_HMAC_SECRET
+          CORS_ORIGINS=$CORS_ORIGINS
+          EOF
+
+      # Assembles dist-hostinger/, then boots it and asserts it serves the SPA,
+      # answers the API and reaches the database. A broken artifact fails the
+      # deploy rather than shipping.
+      - name: Build and verify the deploy artifact
+        run: pnpm build:hostinger
+
+      - name: Install SSH key
+        env:
+          HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+          HOSTINGER_SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          HOSTINGER_SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT || '22' }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s' "$HOSTINGER_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$HOSTINGER_SSH_PORT" -H "$HOSTINGER_SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      # Uploads the CONTENTS of dist-hostinger/ into the app directory. `--delete`
+      # removes stale hashed assets; the deploy path must therefore be the app
+      # directory and nothing broader.
+      - name: Upload artifact
+        env:
+          HOSTINGER_SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          HOSTINGER_SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          HOSTINGER_SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT || '22' }}
+          HOSTINGER_DEPLOY_PATH: ${{ secrets.HOSTINGER_DEPLOY_PATH }}
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p $HOSTINGER_SSH_PORT -o StrictHostKeyChecking=yes" \
+            dist-hostinger/ "$HOSTINGER_SSH_USER@$HOSTINGER_SSH_HOST:$HOSTINGER_DEPLOY_PATH/"
+
+      # Hostinger's Node.js panel usually restarts on its own after files change.
+      # If it does not, set HOSTINGER_RESTART_CMD (e.g. a pm2/LiteSpeed restart
+      # command) and it will be run here.
+      - name: Restart the app
+        env:
+          HOSTINGER_SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          HOSTINGER_SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          HOSTINGER_SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT || '22' }}
+          HOSTINGER_RESTART_CMD: ${{ secrets.HOSTINGER_RESTART_CMD }}
+        run: |
+          if [ -n "$HOSTINGER_RESTART_CMD" ]; then
+            ssh -i ~/.ssh/deploy_key -p "$HOSTINGER_SSH_PORT" \
+              "$HOSTINGER_SSH_USER@$HOSTINGER_SSH_HOST" "$HOSTINGER_RESTART_CMD"
+          else
+            echo "No HOSTINGER_RESTART_CMD set; restart from hPanel if the app did not pick up the change."
+          fi

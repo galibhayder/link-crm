@@ -215,3 +215,36 @@ Order matters on a schema change: **migrate the database first**, then deploy th
 - [ ] Scheduled job cron configured
 - [ ] Database backup scheduled (`DATABASE-BACKUP.md`)
 - [ ] `pnpm verify:secrets` passes on the built bundle
+
+---
+
+## 12. Automatic deploys (GitHub Actions)
+
+`.github/workflows/deploy.yml` builds the artifact on a clean runner and uploads it
+over SSH/rsync on every push to `main`. It exists because **Hostinger cannot build
+this repository itself**: the API uses `workspace:*` (unresolvable by `npm install`)
+and the SPA's `VITE_*` values are baked in at build time. The finished,
+boot-verified `dist-hostinger/` is the only thing that reaches the host.
+
+Set these in **GitHub → Settings → Secrets and variables → Actions**:
+
+| Secret | Value |
+|---|---|
+| `SUPABASE_URL` | hosted project URL (also used as `VITE_SUPABASE_URL`) |
+| `SUPABASE_ANON_KEY` | anon public key (also used as `VITE_SUPABASE_ANON_KEY`) |
+| `SUPABASE_SERVICE_ROLE_KEY` | service_role key — used only by the artifact boot check |
+| `JOB_HMAC_SECRET` | 32+ chars |
+| `HOSTINGER_SSH_HOST` | host/IP from hPanel → SSH Access |
+| `HOSTINGER_SSH_USER` | SSH username |
+| `HOSTINGER_SSH_KEY` | private key with write access to the app directory |
+| `HOSTINGER_SSH_PORT` | optional, defaults to `22` |
+| `HOSTINGER_DEPLOY_PATH` | the directory holding `server.js` |
+| `HOSTINGER_RESTART_CMD` | optional; run over SSH after upload to restart the app |
+
+Runtime variables (`NODE_ENV`, `CORS_ORIGINS`, `SUPABASE_*`, `JOB_HMAC_SECRET`,
+`WEB_DIST_PATH`) still live in the Hostinger panel — see §6.
+
+**Do not also enable Hostinger's own "build from Git" for this repository.** Two
+builders writing the same directory race, and Hostinger's build fails on the
+monorepo anyway. Either let this workflow deploy, or upload
+`pnpm build:hostinger`'s output by hand (§4).
