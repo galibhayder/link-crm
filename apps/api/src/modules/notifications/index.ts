@@ -148,7 +148,15 @@ notificationsRouter.get(
 // A missing row means "all types enabled": the GET returns defaults rather than
 // 404, so the UI never has to special-case a first visit.
 // ---------------------------------------------------------------------------
-const KNOWN_NOTIFICATION_TYPES = ["anchor_alert", "follow_up_due", "placement_stage_changed"] as const;
+const KNOWN_NOTIFICATION_TYPES = [
+  "anchor_alert",
+  "follow_up_due",
+  "placement_stage_changed",
+  // Must match `notifications_type_check` (migration 0033) and the bell's label
+  // map. Three places, and a type missing from any of them renders as a
+  // notification nobody can interpret.
+  "link_needs_review",
+] as const;
 
 notificationsRouter.get(
   "/preferences",

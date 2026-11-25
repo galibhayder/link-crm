@@ -1,6 +1,6 @@
 # API Reference
 
-**231 routes** across five surfaces. Generated from the router declarations by
+**233 routes** across five surfaces. Generated from the router declarations by
 `scripts/generate-api-docs.mjs` — if a route is not here, it does not exist.
 
 ---
@@ -274,10 +274,12 @@ which is exactly the outage you want to be paged for.
 | GET | `/api/v1/placements/:id/history` | `placements:read` |
 | PATCH | `/api/v1/placements/:id/index-status` | `placements:write` |
 | POST | `/api/v1/placements/:id/restore` | `placements:write` |
+| POST | `/api/v1/placements/:id/review` | `placements:check` |
 | POST | `/api/v1/placements/:id/transition` | `placements:write` |
 | GET | `/api/v1/placements/board` | `placements:read` |
 | GET | `/api/v1/placements/export/csv` | `placements:read` |
 | GET | `/api/v1/placements/options/stages` | `placements:read` |
+| GET | `/api/v1/placements/review-queue` | `placements:check` |
 | GET | `/api/v1/pricing/placements/:placementId` | `pricing:read` |
 | PUT | `/api/v1/pricing/placements/:placementId` | `pricing:write` |
 | GET | `/api/v1/profile` | authenticated |

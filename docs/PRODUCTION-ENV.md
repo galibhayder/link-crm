@@ -14,7 +14,7 @@ Read by Express. **Never** exposed to the browser.
 |---|---|---|---|
 | `NODE_ENV` | yes | `production` | Gates the production checks below. Anything but `production` skips them. |
 | `PORT` | no | `3000` | Listen port. Hostinger assigns one automatically — see §4. |
-| `SUPABASE_URL` | yes | `https://abcdefgh.supabase.co` | Project URL. Must be the hosted URL in production. |
+| `SUPABASE_URL` | yes | `https://ovxflykukxitapfsayrx.supabase.co` | Project URL. Must be the hosted URL in production. |
 | `SUPABASE_ANON_KEY` | yes | `eyJhbGci...` | Public anon key. Used server-side only to validate identity; also ships to the browser via the frontend file. |
 | `SUPABASE_SERVICE_ROLE_KEY` | yes | `eyJhbGci...` | **Server-only. Full database access, bypasses RLS.** This is the single most dangerous value in the system. |
 | `JOB_HMAC_SECRET` | yes in prod | 32+ random chars | Signs `/api/v1/internal/jobs/*`. Without it, scheduled link verification and overdue reminders stop silently. |
@@ -50,7 +50,7 @@ Vite inlines these into the bundle **at build time**. Everything here is public.
 
 | Variable | Required | Example | Notes |
 |---|---|---|---|
-| `VITE_SUPABASE_URL` | yes | `https://abcdefgh.supabase.co` | Same value as the backend. Public by design. |
+| `VITE_SUPABASE_URL` | yes | `https://ovxflykukxitapfsayrx.supabase.co` | Same value as the backend. Public by design. |
 | `VITE_SUPABASE_ANON_KEY` | yes | `eyJhbGci...` | The **anon** key. RLS exists because this key is public. |
 | `VITE_API_URL` | no | *(empty)* | Empty means same-origin. In the single-server deployment this **must** stay empty. |
 | `VITE_APP_NAME` | no | `Trivero Marketing` | Build-time fallback only; the Admin panel overrides it at runtime. |

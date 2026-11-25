@@ -11,6 +11,7 @@ import { AuditLogPage } from "@/features/audit/audit-log-page";
 import { ProfilePage } from "@/features/profile/profile-page";
 import { NotFoundPage } from "@/features/misc/not-found-page";
 import { PlacementsPage } from "@/features/placements/placements-page";
+import { LinkReviewPage } from "@/features/placements/link-review-page";
 import { OutreachPage } from "@/features/outreach/outreach-page";
 import { ContentPage } from "@/features/content/content-page";
 import { AnchorsPage } from "@/features/anchors/anchors-page";
@@ -197,6 +198,18 @@ const router = createBrowserRouter([
                 element: (
                   <RequirePermission permission="placements:read">
                     <PlacementsPage />
+                  </RequirePermission>
+                ),
+              },
+              {
+                // Declared after the literal "placements" route and before nothing
+                // conflicting: this is a sibling path, not a child, so order here
+                // does not matter — but the API gate is `placements:check`, which is
+                // narrower than `placements:read`.
+                path: "placements/review",
+                element: (
+                  <RequirePermission permission="placements:check">
+                    <LinkReviewPage />
                   </RequirePermission>
                 ),
               },

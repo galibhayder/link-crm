@@ -1002,9 +1002,11 @@ finished work:
     them no drag. Approval now has a dedicated screen at `/approvals`, which records
     the decision through `client-decision` — the endpoint that role is actually
     permitted to call.
-13. **`placements:check` is enforced but unused by the UI.** The manual verification
-    endpoint works; no screen calls it from the board yet. Scheduled verification now
-    covers the routine case.
+13. **`placements:check` now drives the Link reviews screen.** The board still offers
+    no manual "check now" affordance, but the permission is no longer unused: it gates
+    `/placements/review`, where an owner or account manager clears the verdicts that
+    scheduled verification could not decide. The dashboard shows a count badge so the
+    queue is discoverable without memorising the URL.
 14. **Anchor classification is a heuristic, not an authority.** It compares the
     anchor text to the target URL's slug, which is the best available signal but
     cannot know which terms a client actually wants to rank for. The category is
@@ -1019,9 +1021,14 @@ finished work:
 17. **Scheduled verification runs against a single default cadence.** The interval is
     configurable in `cron.job`, but there is no per-campaign or per-placement
     frequency. Everything due is checked every six hours.
-18. **`needs_manual_review` has no resolution UI.** A placement in that state is
-    flagged in the data and counted in the job result, but nobody is assigned to
-    clear it. It is visible, which is the point — it replaced a false `link_missing`.
+18. **`needs_manual_review` is resolved by a human, and the suppression is temporary.**
+    The Link reviews screen (`/placements/review`) lists the placements whose latest
+    check could not be judged; a reviewer opens the page and records "present" or
+    "missing". The verdict is stored on the placement, not on one check row, so the
+    six-hourly re-check does not refill the queue with the same page. It is cleared as
+    soon as a check returns a judgeable verdict, so a link that genuinely disappears
+    later is still caught. "Missing" records an observation (`removal_detected_at`) but
+    does not move the placement — that stays a decision on the board.
 
 Phase 6 additions:
 

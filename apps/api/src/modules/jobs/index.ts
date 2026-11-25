@@ -171,7 +171,7 @@ jobsRouter.post(
       // converge instead of looping on the same first ten.
       const { data: pending, error } = await admin()
         .from("placements")
-        .select("id, live_url, target_url, anchor_text, anchor_type, link_type, rel_attribute")
+        .select("id, campaign_id, live_url, target_url, anchor_text, anchor_type, link_type, rel_attribute")
         .eq("organization_id", orgId)
         .eq("status", "live")
         .not("live_url", "is", null)
@@ -184,12 +184,26 @@ jobsRouter.post(
 
       const { verifyBacklink, expectedRelFromPlacement } = await import("../../integrations/verification.js");
 
+      // Who hears about a link that needs a human to look at it. Same predicate as
+      // anchor alerts: the people accountable for delivery, not the whole company.
+      const { data: reviewers } = await admin()
+        .from("profiles")
+        .select("id")
+        .eq("organization_id", orgId)
+        .eq("is_active", true)
+        .in("role", ["owner", "account_manager"]);
+
+      const reviewRecipients = reviewers ?? [];
+
       let checked = 0;
       let notFound = 0;
       let mismatched = 0;
       let unreachable = 0;
       let needsReview = 0;
       let retried = 0;
+      let notified = 0;
+      let suppressed = 0;
+      let notificationAttempts = 0;
 
       for (const placement of pending ?? []) {
         const expectedRel = expectedRelFromPlacement(
@@ -251,17 +265,85 @@ jobsRouter.post(
             raw: outcome.detail,
           });
 
+        /**
+         * A judgeable verdict SUPERSEDES an earlier human decision.
+         *
+         * This is the half of the design that keeps it honest. If a page that used
+         * to be a JavaScript shell starts serving real HTML, the verdict becomes
+         * `ok` / `link_missing` and the reviewer's suppression must be cleared —
+         * otherwise a link that genuinely disappeared months later would never be
+         * reported again, which is worse than a noisy queue.
+         *
+         * `v_link_review_queue` encodes the same rule independently: it takes the
+         * LATEST check per placement and keeps the row only if that verdict is still
+         * `needs_manual_review`. So a cleared verdict drops out of the queue even
+         * before this update runs, and the clearing here is what lets a *later* shell
+         * verdict ask again.
+         */
+        const clearsReview = outcome.verdict !== "needs_manual_review";
+
         await admin()
           .from("placements")
-          .update({ last_checked_at: new Date().toISOString() })
+          .update({
+            last_checked_at: new Date().toISOString(),
+            ...(clearsReview
+              ? {
+                  link_review_state: null,
+                  link_reviewed_at: null,
+                  link_reviewed_by: null,
+                  link_review_note: null,
+                  link_reviewed_check_id: null,
+                }
+              : {}),
+          })
           .eq("id", placement.id);
 
         checked += 1;
         if (outcome.verdict === "unreachable") unreachable += 1;
         // A JS shell is neither a missing link nor a pass. Counted separately so
         // "4 links missing" never quietly includes "we could not tell".
-        else if (outcome.verdict === "needs_manual_review") needsReview += 1;
-        else if (!outcome.found) notFound += 1;
+        else if (outcome.verdict === "needs_manual_review") {
+          needsReview += 1;
+
+          /**
+           * Notify ONCE per placement, not once per check.
+           *
+           * The dedupe key omits the check id on purpose: a shell page produces a
+           * new verdict every six hours, and a per-check key would notify every
+           * six hours forever. The user is notified until they read it; if a new
+           * shell verdict arrives after they have dealt with the last one, 0024's
+           * partial unique index (`where read_at is null`) lets it fire again.
+           */
+          notificationAttempts += 1;
+          for (const recipient of reviewRecipients) {
+            const { data: notificationId, error: emitErr } = await admin().rpc("emit_notification_rpc", {
+              p_org: orgId,
+              p_user: recipient.id,
+              p_type: "link_needs_review",
+              // Deliberately narrow: enough to find the placement, nothing about
+              // cost or margin. A notification payload is the least-protected
+              // surface in the application.
+              p_payload: {
+                placementId: placement.id,
+                campaignId: placement.campaign_id,
+                url: placement.live_url,
+                reason: outcome.failureReason,
+                link: "/placements/review",
+              },
+              p_dedupe_key: `link_needs_review:${placement.id}`,
+            });
+
+            // `data === null` is a dedupe suppression, `error` is a real failure.
+            // Conflating the two is the exact bug migration 0027 fixed.
+            if (emitErr) {
+              logger.warn({ emitErr, placementId: placement.id }, "could not emit review notification");
+            } else if (notificationId) {
+              notified += 1;
+            } else {
+              suppressed += 1;
+            }
+          }
+        } else if (!outcome.found) notFound += 1;
         else if (outcome.verdict !== "ok") mismatched += 1;
       }
 
@@ -287,6 +369,8 @@ jobsRouter.post(
         needsReview,
         retried,
         remaining: remainingCount,
+        notified,
+        suppressed,
         batchSize,
         detail: {
           checked,
@@ -297,6 +381,12 @@ jobsRouter.post(
           retried,
           remaining: remainingCount,
           batchSize,
+          // Review notifications: `notified` means a person was actually pinged,
+          // `suppressed` means they had an unread one already. Separate numbers so
+          // "0 notified" is not mistaken for "nothing needed review".
+          notified,
+          suppressed,
+          notificationAttempts,
         },
       };
     });
@@ -309,6 +399,8 @@ jobsRouter.post(
       needsReview: result.needsReview,
       retried: result.retried,
       remaining: result.remaining,
+      notified: result.notified,
+      suppressed: result.suppressed,
     });
   }),
 );

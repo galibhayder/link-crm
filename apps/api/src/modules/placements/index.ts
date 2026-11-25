@@ -30,7 +30,7 @@ const idParams = z.object({ id: uuidSchema });
  * agreed figure now lives only in `placement_costs`, behind `costs:read`.
  */
 const COLUMNS =
-  "id, campaign_id, prospect_id, publisher_id, supplier_id, target_url, anchor_text, anchor_type, live_url, link_type, rel_attribute, status, pipeline_stage, scheduled_date, live_date, index_status, index_status_manual, removal_detected_at, last_checked_at, assigned_to, content_assignee, content_due_date, submitted_at, client_approved_at, client_approved_by, client_approval_note, client_rejected_reason, internal_notes, notes, created_at, updated_at";
+  "id, campaign_id, prospect_id, publisher_id, supplier_id, target_url, anchor_text, anchor_type, live_url, link_type, rel_attribute, status, pipeline_stage, scheduled_date, live_date, index_status, index_status_manual, removal_detected_at, last_checked_at, link_review_state, link_reviewed_at, link_reviewed_by, link_review_note, link_reviewed_check_id, assigned_to, content_assignee, content_due_date, submitted_at, client_approved_at, client_approved_by, client_approval_note, client_rejected_reason, internal_notes, notes, created_at, updated_at";
 
 const MAP: Record<string, string> = {
   campaignId: "campaign_id",
@@ -1027,6 +1027,146 @@ placementsRouter.get(
 
     if (error) throw Errors.internal(error.message);
     ok(res, data ?? []);
+  }),
+);
+
+/**
+ * THE REVIEW QUEUE.
+ *
+ * A JavaScript-rendered page cannot be judged from its server HTML, so
+ * verification returns `needs_manual_review` instead of a false `link_missing` or
+ * a false `ok`. This is where those verdicts come to be answered.
+ *
+ * Read through `admin()` against `v_link_review_queue`, which keeps "latest check
+ * per placement" as a single DISTINCT ON rather than a hand-rolled reduce over a
+ * paginated list. The view is service_role-only, so this aggregate cannot leak
+ * through PostgREST to a portal user.
+ */
+placementsRouter.get(
+  "/review-queue",
+  authorize("placements:check"),
+  asyncRoute(async (req, res) => {
+    const { admin } = await import("../../integrations/supabase.js");
+
+    const { data, error } = await admin()
+      .from("v_link_review_queue")
+      .select("*")
+      .eq("organization_id", orgOf(req))
+      .order("checked_at", { ascending: true })
+      .limit(200);
+
+    if (error) throw Errors.internal(error.message);
+
+    const rows = data ?? [];
+    ok(res, rows, { total: rows.length });
+  }),
+);
+
+/**
+ * RESOLVE A REVIEW.
+ *
+ * The reviewer opens the page, looks, and records what they saw. Three properties
+ * this endpoint must have:
+ *
+ *   1. The decision is tied to the OBSERVATION that was adjudicated (`checkId`),
+ *      so a stale browser tab cannot silently apply a decision to a newer, and
+ *      possibly different, check.
+ *   2. It records WHO and WHEN. The existing `PATCH /:id/index-status` captures
+ *      neither, and that gap is not worth reproducing.
+ *   3. `missing` records an observation (`removal_detected_at`) and does NOT move
+ *      the placement. Changing status stays a human decision on the board, which
+ *      is the rule stated on the verification endpoint above.
+ *
+ * The suppression this creates is deliberately temporary: the `check-links` job
+ * clears it whenever the automatic verdict becomes judgeable, so a link that
+ * genuinely disappears later is still caught.
+ */
+placementsRouter.post(
+  "/:id([0-9a-fA-F-]{36})/review",
+  authorize("placements:check"),
+  validate({
+    params: idParams,
+    body: z.object({
+      resolution: z.enum(["present", "missing"]),
+      /** Which observation was adjudicated. Required, so the decision is anchored. */
+      checkId: uuidSchema,
+      note: z.string().trim().max(2000).optional(),
+    }),
+  }),
+  asyncRoute(async (req, res) => {
+    const b = req.body as { resolution: "present" | "missing"; checkId: string; note?: string };
+
+    const { data: placement, error: pErr } = await req.auth!.db
+      .from("placements")
+      .select("id, status, removal_detected_at")
+      .eq("id", req.params.id)
+      .maybeSingle();
+
+    if (pErr) throw Errors.internal(pErr.message);
+    if (!placement) throw Errors.notFound("Placement");
+
+    // The check must belong to this placement AND still be the thing that needs
+    // reviewing. Anything else means the page has moved on since the tab loaded.
+    const { data: check, error: cErr } = await req.auth!.db
+      .from("link_checks")
+      .select("id, placement_id, verdict, checked_at")
+      .eq("id", b.checkId)
+      .eq("placement_id", placement.id)
+      .maybeSingle();
+
+    if (cErr) throw Errors.internal(cErr.message);
+    if (!check) throw Errors.badRequest("That check does not belong to this placement");
+    if (check.verdict !== "needs_manual_review") {
+      throw Errors.badRequest(
+        "That check has already been superseded. Reload the review queue and resolve the current one.",
+      );
+    }
+
+    const patch: Record<string, unknown> = {
+      link_review_state: b.resolution === "present" ? "confirmed_present" : "confirmed_missing",
+      link_reviewed_at: new Date().toISOString(),
+      link_reviewed_by: req.auth!.userId,
+      link_review_note: b.note || null,
+      link_reviewed_check_id: check.id,
+    };
+
+    // An OBSERVATION, not a transition. Preserve the first time the absence was
+    // noticed: if a reviewer confirms it missing twice, the date that matters is
+    // the earliest one. `status` is deliberately untouched — moving a placement to
+    // `removed` is a decision a human makes on the board.
+    if (b.resolution === "missing") {
+      patch.removal_detected_at = placement.removal_detected_at ?? new Date().toISOString();
+    } else if (placement.removal_detected_at) {
+      // The reviewer looked and found it. A stale `removal_detected_at` from an
+      // earlier observation would otherwise read as "still removed".
+      patch.removal_detected_at = null;
+    }
+
+    const { data, error } = await req.auth!.db
+      .from("placements")
+      .update(patch)
+      .eq("id", placement.id)
+      .select(COLUMNS)
+      .maybeSingle();
+
+    if (error) throw Errors.internal(error.message);
+    if (!data) throw Errors.notFound("Placement");
+
+    await auditFromRequest(req, {
+      entityType: "placement",
+      entityId: placement.id,
+      action: "update",
+      diff: {
+        linkReview: {
+          from: null,
+          to: { resolution: b.resolution, checkId: check.id, checkedAt: check.checked_at },
+        },
+        ...(b.note ? { note: b.note } : {}),
+      },
+    });
+
+    // The queue changed, so tell the client rather than making it guess.
+    ok(res, { ...data, stillInQueue: false });
   }),
 );
 

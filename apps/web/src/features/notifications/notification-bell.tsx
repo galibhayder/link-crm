@@ -208,6 +208,8 @@ function titleFor(n: Notification): string {
       return "Follow-up due";
     case "placement_stage_changed":
       return "Placement moved";
+    case "link_needs_review":
+      return "Link needs review";
     default:
       return "Notification";
   }
@@ -226,6 +228,13 @@ function bodyFor(n: Notification): string {
   if (n.type === "follow_up_due") return domain ? `Follow up with ${domain}` : "A follow-up is due";
   if (n.type === "placement_stage_changed") {
     return targetUrl ? `${targetUrl}${to ? ` → ${to}` : ""}` : "A placement changed stage";
+  }
+  if (n.type === "link_needs_review") {
+    // Deliberately not the raw `failure_reason`: it is written for an operator
+    // reading a check row, and reads as jargon in a notification. The link is the
+    // actionable part — the reviewer opens the page and looks.
+    const url = typeof n.payload.url === "string" ? n.payload.url : null;
+    return url ? `Open ${url} and confirm the link is there` : "A link could not be verified automatically";
   }
   return "You have a new notification";
 }

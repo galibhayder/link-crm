@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, ArrowUpRight, Building2, Link2, Target, Users } from "lucide-react";
 import { DASHBOARD_WIDGET_IDS } from "@crm/shared";
-import { useAccessToken } from "@/providers/auth";
+import { useAccessToken, useAuth } from "@/providers/auth";
+import { ReviewQueueCount } from "@/features/placements/link-review-page";
 import { useOptionalUiConfig } from "@/providers/ui-config";
 import { apiGet, API_BASE } from "@/lib/api";
 import { formatNumber } from "@/lib/utils";
@@ -68,6 +69,7 @@ export function HealthIndicator() {
 
 export function DashboardPage() {
   const token = useAccessToken();
+  const { can } = useAuth();
   const health = useSystemHealth();
 
   const summary = useQuery({
@@ -149,7 +151,15 @@ export function DashboardPage() {
         <PageHeading
           title="Dashboard"
           description="A live view of your agency's pipeline, delivery and financial health."
-          actions={<HealthIndicator />}
+          actions={
+            <div className="flex items-center gap-2">
+              {/* Discoverable without remembering the URL — but only for roles that
+                  can act on it. Rendering it unconditionally would make every other
+                  role's dashboard fire a request that 403s. */}
+              {can("placements:check") && <ReviewQueueCount />}
+              <HealthIndicator />
+            </div>
+          }
         />
 
         {shownWidgets.includes("metrics") &&

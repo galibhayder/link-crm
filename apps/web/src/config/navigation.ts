@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   Link2,
   PieChart,
+  ScanSearch,
   ScrollText,
   Send,
   Settings,
@@ -97,6 +98,14 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Publishers", to: "/publishers", icon: Globe2, permissions: ["publishers:read"], comingSoon: true },
       { label: "Prospects", to: "/prospects", icon: Users, permissions: ["prospects:read"], comingSoon: true },
       { label: "Placements", to: "/placements", icon: Link2, permissions: ["placements:read"] },
+      {
+        // Links that could not be verified automatically, because the page is
+        // rendered by JavaScript. Someone has to open them and look.
+        label: "Link reviews",
+        to: "/placements/review",
+        icon: ScanSearch,
+        permissions: ["placements:check"],
+      },
       { label: "Outreach", to: "/outreach", icon: Send, permissions: ["touchpoints:read"] },
       { label: "Content", to: "/content", icon: BookOpen, permissions: ["briefs:read"] },
       { label: "Anchors", to: "/anchors", icon: PieChart, permissions: ["reports:read"] },

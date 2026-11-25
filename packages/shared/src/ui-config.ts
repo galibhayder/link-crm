@@ -42,6 +42,10 @@ export const MODULE_IDS = [
   "/publishers",
   "/prospects",
   "/placements",
+  // The triage queue for links that could not be verified automatically. A module
+  // in its own right rather than a tab under /placements, because it is a separate
+  // job ("open the page and look") with its own permission.
+  "/placements/review",
   "/outreach",
   "/content",
   "/anchors",
@@ -68,6 +72,7 @@ export const MODULE_PERMISSIONS: Record<ModuleId, string | null> = {
   "/publishers": "publishers:read",
   "/prospects": "prospects:read",
   "/placements": "placements:read",
+  "/placements/review": "placements:check",
   "/outreach": "touchpoints:read",
   "/content": "briefs:read",
   "/anchors": "reports:read",

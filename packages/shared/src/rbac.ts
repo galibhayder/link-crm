@@ -121,6 +121,14 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "briefs:read",
     "briefs:approve",
     "placements:read",
+    /**
+     * Clearing a `needs_manual_review` verdict — opening a JS-rendered page and
+     * confirming the link is there. It is the delivery owner's job, and the
+     * `link_needs_review` notification is addressed to them, so withholding it here
+     * would ping them about a queue they cannot open. Read-only on the placement:
+     * moving one to `removed` still needs `placements:write`.
+     */
+    "placements:check",
     "placements:approve",
     "pricing:read",
     "pricing:write",
