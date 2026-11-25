@@ -16,6 +16,17 @@ import { fileURLToPath, URL } from "node:url";
  * place this can be caught, and it must be caught loudly.
  */
 export default defineConfig(({ command }) => {
+  // Hosting panels (Hostinger included) commonly expose the Supabase values as
+  // SUPABASE_URL / SUPABASE_ANON_KEY for the server. Vite only inlines VITE_*,
+  // so without this bridge a build that clearly HAS the project configured ships
+  // a bundle with no Supabase client at all — a login page that can never work.
+  // Accept both names; the anon key is public by design.
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "";
+  const supabaseAnon = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "";
+
+  if (!process.env.VITE_SUPABASE_URL && supabaseUrl) process.env.VITE_SUPABASE_URL = supabaseUrl;
+  if (!process.env.VITE_SUPABASE_ANON_KEY && supabaseAnon) process.env.VITE_SUPABASE_ANON_KEY = supabaseAnon;
+
   if (command === "build") {
     const missing = ["VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"].filter(
       (k) => !process.env[k] || process.env[k]?.trim() === "",
@@ -33,6 +44,14 @@ export default defineConfig(({ command }) => {
 
   return {
     plugins: [react(), tailwindcss()],
+    // Belt-and-braces: inline the resolved values explicitly, so they are baked
+    // in regardless of how/when the panel injects the environment.
+    define: {
+      ...(supabaseUrl ? { "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(supabaseUrl) } : {}),
+      ...(supabaseAnon
+        ? { "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(supabaseAnon) }
+        : {}),
+    },
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
