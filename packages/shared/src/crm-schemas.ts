@@ -217,8 +217,13 @@ export const publisherInputSchema = z.object({
     .string()
     .trim()
     .nullish()
-    .transform((v) => (v && v.length > 0 ? v : null))
-    .pipe(z.enum(LINK_TYPES).nullish()),
+    // Zod 4 checks `.pipe()` input types: the transform yields `string | null`,
+    // while `z.enum` accepts only its members. Annotating the transform result
+    // keeps the enum type (and the runtime check) without widening the schema.
+    .transform((v): (typeof LINK_TYPES)[number] | null =>
+      v && v.length > 0 ? (v as (typeof LINK_TYPES)[number]) : null,
+    )
+    .pipe(z.enum(LINK_TYPES).nullable()),
   price: optionalMoney,
   // An empty currency cell falls back to the default rather than failing: the
   // exporter always writes one, but a hand-made file may not.
@@ -374,11 +379,11 @@ export const importPreviewSchema = z.object({
   duplicateStrategy: z.enum(DUPLICATE_STRATEGIES).default("skip"),
   /** Rows keyed by column name, as parsed from the file. */
   rows: z
-    .array(z.record(z.string()))
+    .array(z.record(z.string(), z.string()))
     .min(1, "The file contains no data rows")
     .max(5000, "Imports are limited to 5,000 rows at a time"),
   /** Used by prospects/campaigns, which are scoped to a parent record. */
-  defaults: z.record(z.string()).optional(),
+  defaults: z.record(z.string(), z.string()).optional(),
 });
 
 export const importCommitSchema = z.object({

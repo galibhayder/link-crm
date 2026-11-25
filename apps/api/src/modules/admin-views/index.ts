@@ -27,8 +27,8 @@ const idParams = z.object({ id: z.string().uuid() });
 const viewSchema = z.object({
   module: z.string().trim().min(1).max(60),
   name: z.string().trim().min(1).max(60),
-  filters: z.record(z.unknown()).default({}),
-  sort: z.record(z.unknown()).default({}),
+  filters: z.record(z.string(), z.unknown()).default({}),
+  sort: z.record(z.string(), z.unknown()).default({}),
   isShared: z.boolean().default(false),
   isDefault: z.boolean().default(false),
   isSystem: z.boolean().default(false),

@@ -10,7 +10,9 @@ import { Errors } from "../lib/errors.js";
 export function validate(schemas: { body?: ZodTypeAny; params?: ZodTypeAny; query?: ZodTypeAny }) {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
-      if (schemas.params) req.params = schemas.params.parse(req.params);
+      // Zod 4's `parse` is typed `unknown` on ZodTypeAny; validate() has already
+      // replaced the raw value, so restore Express's own type here.
+      if (schemas.params) req.params = schemas.params.parse(req.params) as typeof req.params;
       if (schemas.query) req.query = schemas.query.parse(req.query) as typeof req.query;
       if (schemas.body) req.body = schemas.body.parse(req.body);
       next();

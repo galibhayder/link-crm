@@ -8,3 +8,15 @@ packages:
 allowBuilds:
   esbuild: true
   puppeteer: true
+
+# Force transitive duplicates off their vulnerable versions.
+# pnpm 12 reads these here (the `pnpm` field in package.json is ignored).
+overrides:
+  # vitest 2 shipped tinypool 1.x; vitest 4 uses 2.x.
+  tinypool: ^2.1.2
+  # vite 5 pulled 0.21.5 and vite 6 pulls 0.25.x; both are in the advisory range.
+  esbuild: ^0.28.1
+  # exceljs pins uuid 8; 11 is the CommonJS-compatible patched line.
+  uuid: ^11.1.1
+  # @vitejs/plugin-react and vitest 2 dragged in vite 5. Everything must be 6.
+  vite: ^6.4.4

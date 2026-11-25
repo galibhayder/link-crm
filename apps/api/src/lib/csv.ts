@@ -183,7 +183,7 @@ export function summarize(verdicts: RowVerdict[]): ImportSummary {
  * field-level errors that prevented it.
  */
 export function validateRow<T>(
-  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
+  schema: z.ZodType<T>,
   candidate: unknown,
 ): { ok: true; value: T } | { ok: false; errors: Record<string, string> } {
   const parsed = schema.safeParse(candidate);

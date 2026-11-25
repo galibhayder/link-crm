@@ -177,7 +177,7 @@ export const UIConfigSchema = z
       .optional(),
 
     /** Module on/off. `false` disables; `true` is the default and changes nothing. */
-    modules: z.record(z.enum(MODULE_IDS), z.boolean()).optional(),
+    modules: z.partialRecord(z.enum(MODULE_IDS), z.boolean()).optional(),
 
     /**
      * Per-role hiding. The array lists modules to HIDE for that role.
@@ -185,11 +185,11 @@ export const UIConfigSchema = z
      * Modelled as a deny-list on purpose: an allow-list would read as "these are
      * the modules this role may see", which is a permission grant in disguise.
      */
-    roleVisibility: z.record(z.enum(ROLES), z.array(z.enum(MODULE_IDS)).max(40)).optional(),
+    roleVisibility: z.partialRecord(z.enum(ROLES), z.array(z.enum(MODULE_IDS)).max(40)).optional(),
 
     /** Table presentation, per module. */
     tables: z
-      .record(
+      .partialRecord(
         z.enum(MODULE_IDS),
         z
           .object({

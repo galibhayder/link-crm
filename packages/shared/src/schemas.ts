@@ -291,7 +291,7 @@ export const paymentCreateSchema = z.object({
 export const exportRequestSchema = z.object({
   entity: z.enum(["clients", "publishers", "prospects", "placements", "invoices", "payments"]),
   format: z.enum(["csv", "xlsx"]).default("csv"),
-  filters: z.record(z.unknown()).optional(),
+  filters: z.record(z.string(), z.unknown()).optional(),
 });
 
 /**
@@ -301,7 +301,7 @@ export const exportRequestSchema = z.object({
 export const importRequestSchema = z.object({
   entity: z.enum(["clients", "publishers", "prospects", "placements"]),
   dryRun: z.boolean().default(true),
-  rows: z.array(z.record(z.unknown())).min(1).max(5000),
+  rows: z.array(z.record(z.string(), z.unknown())).min(1).max(5000),
 });
 
 export const indexStatusUpdateSchema = z.object({

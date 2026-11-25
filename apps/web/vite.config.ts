@@ -64,6 +64,10 @@ export default defineConfig(({ command }) => {
   build: {
     outDir: "dist",
     sourcemap: false,
+    // esbuild 0.28 (pinned via overrides for GHSA-gv7w-rqvm-qjhr) no longer
+    // downlevels destructuring for the legacy default target list. The app runs
+    // in modern browsers, so target ES2022 directly and skip that transform.
+    target: "es2022",
     // Split the heavy, rarely-changing dependencies out of the app chunk so a
     // code change does not invalidate 700kB of vendor code in the browser cache.
     rollupOptions: {
