@@ -3,8 +3,16 @@ import { env } from "./config/env.js";
 
 const app = createApp();
 
-const server = app.listen(env.PORT, () => {
-  console.log(`[api] listening on http://localhost:${env.PORT} (${env.NODE_ENV})`);
+/**
+ * Bind explicitly. A reverse proxy (xCloud/nginx, Hostinger, etc.) connects to
+ * 127.0.0.1; a server that binds only `localhost` can end up on IPv6 `::1` and
+ * answer nothing there, producing a 502 while the process looks healthy. Set
+ * HOST=0.0.0.0 when something outside the host must reach it directly.
+ */
+const host = process.env.HOST || "127.0.0.1";
+
+const server = app.listen(env.PORT, host, () => {
+  console.log(`[api] listening on http://${host}:${env.PORT} (${env.NODE_ENV})`);
 });
 
 /**
